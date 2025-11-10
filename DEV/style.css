@@ -1,0 +1,128 @@
+:root{--blue:#0ea5d8;--dark:#0b3b47;--accent:#ffffff;--muted:#f3f4f6}
+*{box-sizing:border-box;font-family:Inter,Segoe UI,Roboto,Arial,sans-serif}
+body{margin:0;background:var(--muted);color:#111;-webkit-font-smoothing:antialiased}
+header{background:var(--blue);padding:14px 18px;border-bottom:6px solid #062f36}
+.header-inner{display:flex;align-items:center;gap:18px;position:relative}
+.logo{background:#fff;padding:10px 18px;border-radius:4px;font-weight:700;color:var(--dark)}
+nav{display:flex;gap:8px;align-items:center;margin-left:8px}
+nav a{padding:8px 12px;background:rgba(255,255,255,0.15);border-radius:6px;color:#fff;text-decoration:none}
+nav a.active{background:#fff;color:var(--dark);font-weight:700}
+.logo-link img{display:block;border-radius:50%}
+
+main{padding:26px;max-width:1100px;margin:18px auto}
+h1{font-size:26px;margin:0 0 18px}
+
+.timetable-card{background:#fff;padding:18px;border:6px solid #111;border-radius:4px}
+.timetable-area{height:360px;border:6px solid #111;margin-bottom:22px;display:grid;grid-template-columns:66px 1fr;overflow:auto}
+.time-col{border-right:4px solid #111;padding:8px;min-width:66px}
+.time-slot{height:60px;display:flex;align-items:center;justify-content:center;border-bottom:1px dashed #ddd}
+.grid{padding:8px}
+.grid-inner{height:100%;border:4px solid #111;display:grid;grid-template-rows:repeat(6,1fr);grid-template-columns:repeat(7,1fr);gap:6px;padding:6px}
+.cell{background:transparent;border:2px dashed #ccc;border-radius:6px;position:relative;min-height:40px;cursor:pointer;transition:background .12s,border-color .12s}
+.cell:hover{background:#f8fdff;border-color:#9ddfea}
+
+.featured{margin-top:8px;background:#fff;padding:18px;border:6px solid #111;border-radius:4px}
+.featured h3{margin:0 0 12px}
+.courses{display:flex;gap:12px;flex-wrap:wrap}
+.course{border:2px solid #111;padding:10px;border-radius:6px;min-width:180px;background:linear-gradient(180deg,#fff,#f9f9f9)}
+
+.controls{display:flex;gap:12px;align-items:center;margin:18px 0;flex-wrap:wrap}
+.control-group{display:flex;gap:8px;align-items:center}
+.actions{margin-left:auto}
+.btn{background:var(--dark);color:#fff;padding:10px 12px;border-radius:6px;border:none;cursor:pointer}
+.btn.secondary{background:#fff;color:var(--dark);border:2px solid #111}
+label{font-size:13px}
+input,select{padding:8px;border:2px solid #111;border-radius:6px}
+
+footer{max-width:1100px;margin:18px auto;padding:10px 18px;border-top:6px solid #111;background:#fff}
+.small{font-size:13px;color:#333}
+
+@media (max-width:900px){
+  .timetable-area{grid-template-columns:1fr}
+  .time-col{display:none}
+  .grid-inner{grid-template-columns:repeat(2,1fr)}
+  .control-group{flex-wrap:wrap}
+}
+
+/* LOGIN PAGE STYLE */
+.login-page {
+  background: linear-gradient(135deg, #0ea5d8, #062f36);
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-card {
+  background: rgba(255, 255, 255, 0.18);
+  border: 2px solid rgba(255,255,255,0.35);
+  backdrop-filter: blur(12px);
+  padding: 32px;
+  border-radius: 14px;
+  text-align: center;
+  color: #fff;
+}
+
+.login-logo {
+  margin-bottom: 14px;
+  font-size: 28px;
+  font-weight: 700;
+  background:#fff;
+  color:#0b3b47;
+  padding:10px 18px;
+  border-radius:8px;
+  display:inline-block;
+}
+
+.input-group {
+  position: relative;
+  margin: 22px 0;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 10px;
+  border: none;
+  border-bottom: 2px solid #fff;
+  background: transparent;
+  color: #fff;
+  outline: none;
+  font-size: 16px;
+}
+
+.input-group label {
+  position: absolute;
+  left: 10px;
+  top: 12px;
+  color: #e3e3e3;
+  transition: 0.3s;
+  pointer-events: none;
+}
+
+.input-group input:focus + label,
+.input-group input:valid + label {
+  top: -8px;
+  font-size: 12px;
+  color: #bbecff;
+}
+
+.login-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  font-size: 16px;
+}
+
+.alt-link {
+  font-size: 14px;
+  margin-top: 12px;
+}
+.alt-link a {
+  color: #fff;
+  text-decoration: underline;
+}

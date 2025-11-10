@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Đăng nhập - SSMS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-page">
+
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-logo">SSMS</div>
+    <h2>Đăng nhập</h2>
+
+    <div class="input-group">
+      <input type="text" id="loginUser" required>
+      <label for="loginUser">Tên đăng nhập</label>
+    </div>
+
+    <div class="input-group">
+      <input type="password" id="loginPass" required>
+      <label for="loginPass">Mật khẩu</label>
+    </div>
+
+    <button class="btn login-btn" onclick="login()">Đăng nhập</button>
+
+    <p class="alt-link">Chưa có tài khoản? <a href="register.html">Đăng ký ngay</a></p>
+    <p class="alt-link"><a href="index.html">Bỏ qua đăng nhập →</a></p>
+  </div>
+</div>
+
+<script>
+function login(){
+  var u = document.getElementById("loginUser").value.trim();
+  var p = document.getElementById("loginPass").value;
+  if(!u || !p){ alert("Vui lòng nhập đầy đủ thông tin!"); return; }
+  var acc = JSON.parse(localStorage.getItem("accounts")||"{}");
+  if(acc[u] && acc[u] === p){
+    localStorage.setItem("currentUser", u);
+    window.location = "index.html";
+  } else {
+    alert("Sai tài khoản hoặc mật khẩu!");
+  }
+}
+</script>
+
+</body>
+</html>
