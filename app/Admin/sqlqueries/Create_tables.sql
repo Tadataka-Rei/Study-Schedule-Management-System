@@ -1,4 +1,5 @@
 USE app_db;
+
 -- Users Table
 CREATE TABLE Users (
     user_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -6,7 +7,7 @@ CREATE TABLE Users (
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role ENUM('Teacher', 'Student', 'Individual') NOT NULL,
-    profile_pic_url VARCHAR(512) NULL COMMENT 'URL to the image stored in object storage',
+    profile_pic_path VARCHAR(512) NULL COMMENT 'Local path to the uploaded image',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
