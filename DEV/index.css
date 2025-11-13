@@ -1,0 +1,248 @@
+* {
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #f2f5f8;
+  color: #333;
+  width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  padding: 12px 40px;
+  background: #009fe3;
+  color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  justify-content: space-between;
+  /* logo-left và avatar bên phải */
+  position: relative;
+}
+
+header nav {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 30px;
+}
+
+
+header nav a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+header nav a:hover {
+  text-decoration: underline;
+}
+
+.logo-left,
+.logo-right {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+
+main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 40px 50px;
+  width: 100%;
+}
+
+.month-calendar {
+  width: 250px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  height: fit-content;
+  flex-shrink: 0;
+}
+
+.month-calendar h3 {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #046b99;
+  font-size: 16px;
+}
+
+.month-calendar table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  table-layout: fixed;
+}
+
+.month-calendar th {
+  background: #e9f6ff;
+  padding: 4px;
+  border: 1px solid #dde;
+  font-weight: 600;
+  font-size: 12px;
+  color: #046b99;
+}
+
+.month-calendar td {
+  padding: 6px 0;
+  border: 1px solid #f0f0f0;
+  font-size: 12px;
+  transition: 0.2s;
+}
+
+.month-calendar td.today {
+  background: #009fe3;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 4px;
+}
+
+.content {
+  flex: 1;
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  margin-bottom: 20px;
+  color: #222;
+  font-size: 20px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 25px;
+  align-items: center;
+}
+
+select,
+input,
+button,
+textarea {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+input,
+textarea {
+  flex: 1;
+  min-width: 80px;
+}
+
+textarea {
+  resize: none;
+}
+
+button {
+  background: #046b99;
+  color: white;
+  cursor: pointer;
+  border: none;
+  transition: 0.3s;
+  padding: 9px 14px;
+}
+
+button:hover {
+  background: #03567a;
+}
+
+button#delBtn {
+  background: #777;
+}
+
+.schedule {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  font-size: 14px;
+}
+
+th,
+td {
+  border: 1px solid #eee;
+  padding: 12px;
+  min-width: 120px;
+}
+
+th {
+  background: #f1f9ff;
+  color: #046b99;
+}
+
+.time-col {
+  background: #f8f8f8;
+  font-weight: bold;
+  width: 80px;
+}
+
+/* Bảng nổi bật và ghi chú */
+#highlightSubjects th,
+#highlightSubjects td,
+#notesTable th,
+#notesTable td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+  font-size: 13px;
+}
+
+#highlightSubjects th,
+#notesTable th {
+  background: #f1f9ff;
+  color: #046b99;
+}
+
+#highlightSubjects {
+  margin-top: 20px;
+}
+
+#notesTable {
+  margin-top: 20px;
+}
+
+#noteControls {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+#noteControls textarea {
+  flex: 1;
+  min-height: 60px;
+}
+
+.note-action {
+  cursor: pointer;
+  margin-left: 5px;
+  font-size: 14px;
+  color: #046b99;
+}
+
+.note-action:hover {
+  color: #d9534f;
+}
