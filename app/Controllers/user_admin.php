@@ -47,36 +47,55 @@ try {
         $vai_tro = $_POST['role'];
         $profilePicturePath = null; 
 
-        // --- Xử lý tải lên ảnh đại diện ---
-        if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] === UPLOAD_ERR_OK) {
-            $fileTmpPath = $_FILES['profile_picture']['tmp_name'];
-            $fileName = basename($_FILES['profile_picture']['name']);
-            $fileNameCmps = explode(".", $fileName);
-            $fileExtension = strtolower(end($fileNameCmps));
+ // --- Xử lý tải lên ảnh đại diện ---
+if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] === UPLOAD_ERR_OK) {
+    $fileTmpPath = $_FILES['profile_picture']['tmp_name'];
+    $fileName = basename($_FILES['profile_picture']['name']);
+    $fileNameCmps = explode(".", $fileName);
+    $fileExtension = strtolower(end($fileNameCmps));
 
-            $allowedfileExtensions = array('jpg', 'gif', 'png', 'jpeg');
-            if (in_array($fileExtension, $allowedfileExtensions)) {
+    // Cho phép các loại file ảnh
+    $allowedfileExtensions = array('jpg', 'gif', 'png', 'jpeg');
+
+    // Kiểm tra phần mở rộng
+    if (in_array($fileExtension, $allowedfileExtensions)) {
+        
+        // Kiểm tra MIME type thực sự (không chỉ dựa vào extension)
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $fileTmpPath);
+        finfo_close($finfo);
+
+        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (!in_array($mimeType, $allowedMimeTypes)) {
+            $message = 'Lỗi: Tệp tải lên không phải là ảnh hợp lệ.';
+            $messageType = 'error';
+        } else {
+            // Giới hạn kích thước file (ví dụ: 2MB)
+            if ($_FILES['profile_picture']['size'] > 2 * 1024 * 1024) {
+                $message = 'Lỗi: Kích thước ảnh vượt quá 2MB.';
+                $messageType = 'error';
+            } else {
                 // Đảm bảo thư mục uploads tồn tại
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
                 }
-                
-                // Tạo tên tệp duy nhất
                 $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
                 $destPath = $uploadDir . $newFileName;
 
                 if (move_uploaded_file($fileTmpPath, $destPath)) {
-                    $profilePicturePath = $destPath; // Lưu đường dẫn tương đối
+                    $profilePicturePath = $destPath; // Lưu đường dẫn
                 } else {
-                    // Nếu move_uploaded_file thất bại, đặt cảnh báo nhưng vẫn tiếp tục thêm người dùng
-                    $message = 'Cảnh báo: Lỗi khi tải lên ảnh đại diện. Vui lòng kiểm tra quyền ghi của thư mục uploads/user_pfp/.';
+                    $message = 'Lỗi lưu ảnh. Kiểm tra quyền ghi của thư mục uploads/user_pfp/.';
                     $messageType = 'error';
                 }
-            } else {
-                $message = 'Lỗi: Loại tệp ảnh đại diện không hợp lệ. Chỉ chấp nhận JPG, GIF, PNG, JPEG.';
-                $messageType = 'error';
             }
         }
+    } else {
+        $message = 'Lỗi: Loại tệp ảnh không hợp lệ. Chỉ chấp nhận JPG, GIF, PNG, JPEG.';
+        $messageType = 'error';
+    }
+}
+
         // --- Kết thúc xử lý tải lên ---
 
 
@@ -91,7 +110,6 @@ try {
             // Hash mật khẩu
             $hashedPassword = password_hash($mat_khau_tho, PASSWORD_DEFAULT);
 
-            // Chuẩn bị câu lệnh SQL INSERT
             $insertSQL = "
                 INSERT INTO Users (username, email, password_hash, role, profile_pic_path)
                 VALUES (:username, :email, :password_hash, :role, :profile_pic_path)
@@ -146,8 +164,8 @@ try {
     $messageType = 'error';
 } 
 
-// -------------------------------------------------------------------------
-// --- 5. Giao diện (HTML/CSS GUI) ---
+// ------------------------------------------------------------------------
+// ---(HTML/CSS GUI)
 // -------------------------------------------------------------------------
 ?>
 <!DOCTYPE html>

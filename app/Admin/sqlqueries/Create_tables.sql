@@ -13,15 +13,17 @@ CREATE TABLE Users (
 
 -- Courses Table
 CREATE TABLE Courses (
-    course_id INT PRIMARY KEY AUTO_INCREMENT,
-    teacher_id INT NOT NULL,
-    course_name VARCHAR(255) NOT NULL,
-    description TEXT,
-    course_content TEXT,
-    passkey VARCHAR(50) NULL,
-    is_private BOOLEAN NOT NULL DEFAULT FALSE,
-    thumbnail_url VARCHAR(512) NULL COMMENT 'URL to the course thumbnail image',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    course_id INT PRIMARY KEY AUTO_INCREMENT, -- id môn học
+    teacher_id INT NOT NULL, -- id giáo viên tạo môn học
+    course_name VARCHAR(255) NOT NULL, -- tên môn học
+    description TEXT, -- mô tả môn học
+    course_content TEXT, -- nội dung môn học 
+    passkey VARCHAR(50) NULL, -- mã khóa học để đăng ký
+    is_private BOOLEAN NOT NULL DEFAULT FALSE, -- khóa học riêng tư hay công khai
+    thumbnail_url VARCHAR(512) NULL COMMENT 'URL to the course thumbnail image', -- hình thu nhỏ của khóa học
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- thời gian tạo môn học
+    starting_date DATE NULL, -- ngày bắt đầu khóa học
+    ending_date DATE NULL, -- ngày kết thúc khóa học (Nếu rỗng thì là không xác định)
 
     FOREIGN KEY (teacher_id) REFERENCES Users(user_id)
         ON DELETE RESTRICT
