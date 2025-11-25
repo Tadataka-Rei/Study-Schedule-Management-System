@@ -11,71 +11,55 @@ $dsn = "mysql:host=$host;dbname=$db_name;charset=$charset";
 
 $message = '';
 $messageType = '';
-$pdo = null; // Khởi tạo PDO
+$pdo = null; 
 
 try {
 
     $pdo = new PDO($dsn, $user, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Bật ngoại lệ cho lỗi
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC); // Lấy dữ liệu dạng mảng kết hợp
-
-    // --- 2. Đảm bảo bảng Users tồn tại (MySQL) ---
-    $createUsersTableSQL = "
-        CREATE TABLE IF NOT EXISTS Users (
-            user_id INT PRIMARY KEY AUTO_INCREMENT,
-            username VARCHAR(100) NOT NULL UNIQUE,
-            email VARCHAR(255) NOT NULL UNIQUE,
-            password_hash VARCHAR(255) NOT NULL,
-            role ENUM('Teacher', 'Student', 'Individual') NOT NULL,
-            profile_pic_path VARCHAR(512) NULL COMMENT 'Local path to the uploaded image',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-    ";
-    // Đã đổi tên cột từ profile_pic_url thành profile_pic_path để phản ánh việc lưu đường dẫn cục bộ
-    $pdo->exec($createUsersTableSQL);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); 
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);// get data fussion array mode
 
 
-    // -------------------------------------------------------------------------
-    // --- 3. Xử lý gửi form thêm người dùng mới (Bao gồm Tải tệp) ---
+
+    // ---------------------/----------------------------------------------------
+    // --- Form + upload pfp---
     // -------------------------------------------------------------------------
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_user'])) {
         
-        // Lấy và làm sạch dữ liệu đầu vào
+        // clean data
         $ten_dang_nhap = htmlspecialchars(trim(filter_input(INPUT_POST, 'username', FILTER_DEFAULT)), ENT_QUOTES, 'UTF-8');
         $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
         $mat_khau_tho = $_POST['password']; 
         $vai_tro = $_POST['role'];
         $profilePicturePath = null; 
 
- // --- Xử lý tải lên ảnh đại diện ---
+ // --- process pfp ---
 if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] === UPLOAD_ERR_OK) {
     $fileTmpPath = $_FILES['profile_picture']['tmp_name'];
     $fileName = basename($_FILES['profile_picture']['name']);
     $fileNameCmps = explode(".", $fileName);
     $fileExtension = strtolower(end($fileNameCmps));
 
-    // Cho phép các loại file ảnh
     $allowedfileExtensions = array('jpg', 'gif', 'png', 'jpeg');
 
-    // Kiểm tra phần mở rộng
+    //check MINE
     if (in_array($fileExtension, $allowedfileExtensions)) {
         
-        // Kiểm tra MIME type thực sự (không chỉ dựa vào extension)
+        // check mine type, not with extension... well incase you fucker try to put in virus
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mimeType = finfo_file($finfo, $fileTmpPath);
-        finfo_close($finfo);
 
         $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];
         if (!in_array($mimeType, $allowedMimeTypes)) {
             $message = 'Lỗi: Tệp tải lên không phải là ảnh hợp lệ.';
             $messageType = 'error';
         } else {
-            // Giới hạn kích thước file (ví dụ: 2MB)
+            // Limit size
             if ($_FILES['profile_picture']['size'] > 2 * 1024 * 1024) {
                 $message = 'Lỗi: Kích thước ảnh vượt quá 2MB.';
                 $messageType = 'error';
             } else {
-                // Đảm bảo thư mục uploads tồn tại
+                //make sure folder exist 
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
                 }
@@ -83,7 +67,7 @@ if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] ===
                 $destPath = $uploadDir . $newFileName;
 
                 if (move_uploaded_file($fileTmpPath, $destPath)) {
-                    $profilePicturePath = $destPath; // Lưu đường dẫn
+                    $profilePicturePath = $destPath; // save url
                 } else {
                     $message = 'Lỗi lưu ảnh. Kiểm tra quyền ghi của thư mục uploads/user_pfp/.';
                     $messageType = 'error';
@@ -96,10 +80,9 @@ if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] ===
     }
 }
 
-        // --- Kết thúc xử lý tải lên ---
 
 
-        // Kiểm tra các trường bắt buộc
+        // check no null field
         if (empty($ten_dang_nhap) || empty($email) || empty($mat_khau_tho) || empty($vai_tro)) {
             $message = 'Tên đăng nhập, Email, Mật khẩu và Vai trò là các trường bắt buộc.';
             $messageType = 'error';
@@ -107,7 +90,7 @@ if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] ===
             $message = 'Vui lòng nhập địa chỉ email hợp lệ.';
             $messageType = 'error';
         } else {
-            // Hash mật khẩu
+            // Hash password
             $hashedPassword = password_hash($mat_khau_tho, PASSWORD_DEFAULT);
 
             $insertSQL = "
@@ -122,7 +105,7 @@ if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] ===
                     ':email' => $email,
                     ':password_hash' => $hashedPassword,
                     ':role' => $vai_tro,
-                    ':profile_pic_path' => $profilePicturePath // Lưu đường dẫn cục bộ
+                    ':profile_pic_path' => $profilePicturePath // save url
                 ]);
                 $message = 'Thêm người dùng thành công! ID mới là: ' . $pdo->lastInsertId();
                 $messageType = 'success';
@@ -139,7 +122,7 @@ if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] ===
     }
 
     // -------------------------------------------------------------------------
-    // --- 4. Lấy tất cả người dùng để hiển thị ---
+    // --- Lấy tất cả người dùng để hiển thị ---
     // -------------------------------------------------------------------------
     $users = []; 
     $selectUsersSQL = "
@@ -292,7 +275,7 @@ if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] ===
             transition: background-color 0.3s;
         }
         tr:hover {
-            background-color: #eff6ff; /* Highlight row on hover */
+            background-color: #eff6ff;
         }
         .profile-pic-thumbnail {
             width: 40px;
@@ -531,7 +514,7 @@ if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] ===
             if (savedMode === 'true') {
                 setMode(true);
             } else if (savedMode === null && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                // If no preference saved, use system preference (start in dark mode if system is dark)
+
                 setMode(true);
             } else {
                 // Default is light mode
@@ -539,7 +522,7 @@ if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] ===
             }
 
 
-            // 2. Add event listener
+            // FUCK ME
             toggleButton.addEventListener('click', () => {
                 const isDark = body.classList.contains('dark-mode');
                 setMode(!isDark);

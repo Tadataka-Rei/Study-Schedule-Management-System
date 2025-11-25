@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản lý môn học</title>
+<link rel="stylesheet" href="QLMH.css">
+</head>
+<body>
+
+<header>
+  <div class="logo-left">SSMS</div>
+  <div class="menu-toggle" id="menuToggle">☰</div>
+  
+  <nav id="mainNav">
+    <a href="index.html">Trang chủ</a>
+    <a href="QLLHT.html" class="active">Quản lý môn học</a>
+    <a href="#">Tra cứu</a>
+  </nav>
+  
+  <a href="login.html" class="logo-link" style="margin-left:auto;">
+    <img src="logo.svg" alt="User" style="width:46px;height:46px;border-radius:50%;border:2px solid #fff">
+  </a>
+</header>
+
+<main>
+  <aside class="month-calendar">
+    <h3>Thống kê học tập</h3>
+    <div class="stat-box">
+      <div class="stat-item">Tổng số môn: <span id="totalSub">0</span></div>
+      <div class="stat-item">Tổng tín chỉ: <span id="totalCred">0</span></div>
+      <hr style="border:0;border-top:1px solid #ddd;margin:8px 0">
+      <div class="stat-item">Sắp thi: <span style="color:#d9534f; font-weight:bold" id="examCount">0</span></div>
+    </div>
+    <div style="margin-top:20px;text-align:center">
+        <div style="font-size:40px;color:#009fe3;font-weight:bold" id="calDay">24</div>
+        <div style="color:#666" id="calMonth">Tháng 11, 2025</div>
+    </div>
+  </aside>
+
+  <div class="content">
+    <h2>Danh sách môn học</h2>
+
+    <div class="controls" style="background:#f9f9f9; padding:15px; border-radius:8px; border:1px solid #eee;">
+      <input type="text" id="maMon" placeholder="Mã môn" style="flex:0.6; min-width:80px">
+      <input type="text" id="tenMon" placeholder="Tên môn học" style="flex:2; min-width:150px">
+      <input type="number" id="tinChi" placeholder="TC" min="1" max="10" style="flex:0.4; min-width:60px">
+      <select id="loaiMon" style="flex:0.8; min-width:100px">
+        <option value="Bắt buộc">Bắt buộc</option>
+        <option value="Tự chọn">Tự chọn</option>
+      </select>
+      <input type="date" id="ngayThi" style="flex:0.9; min-width:130px; color:#555">
+
+      <button id="btnAdd">➕ Thêm</button>
+      <button id="btnUpdate">💾 Lưu</button>
+      <button id="btnCancel">❌ Hủy</button>
+    </div>
+
+    <div class="controls">
+      <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm môn học..." style="border:1px solid #009fe3; width:100%">
+    </div>
+
+    <div class="table-container">
+      <table id="subjectTable">
+        <thead>
+          <tr>
+            <th width="10%">Mã môn</th>
+            <th width="30%">Tên môn học</th>
+            <th width="10%" style="text-align:center">Tín chỉ</th>
+            <th width="15%" style="text-align:center">Loại</th>
+            <th width="15%" style="text-align:center">Ngày thi</th>
+            <th width="15%" style="text-align:center">Hành động</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="notification-area">
+        <div class="notif-card">
+            <h3 style="color:#d9534f">📅 Lịch thi sắp tới</h3>
+            <ul class="exam-list" id="examAlertList">
+            </ul>
+        </div>
+
+        <div class="notif-card">
+            <h3 style="color:#009fe3">📢 Thông báo từ Nhà trường</h3>
+            <ul class="news-list">
+                <li>
+                    <span class="news-date">24/11/2025</span>
+                    <b>Đăng ký tín chỉ HK2:</b> Hệ thống sẽ mở đăng ký bổ sung từ ngày 01/12 đến 05/12.
+                </li>
+                <li>
+                    <span class="news-date">20/11/2025</span>
+                    <b>Nhắc nhở đóng học phí:</b> Hạn chót đóng học phí đợt 2 là ngày 30/11/2025.
+                </li>
+                <li>
+                    <span class="news-date">15/11/2025</span>
+                    <b>Nghỉ lễ:</b> Sinh viên được nghỉ tết Dương lịch từ 01/01/2026 đến hết 03/01/2026.
+                </li>
+            </ul>
+        </div>
+    </div>
+  </div>
+</main>
+
+<script>
+// --- 1. Dữ liệu mẫu ---
+let subjects = [
+  { id: "IT001", name: "Nhập môn Lập trình", credit: 4, type: "Bắt buộc", examDate: "2025-12-20" },
+  { id: "IT002", name: "Lập trình Hướng đối tượng", credit: 4, type: "Bắt buộc", examDate: "2025-11-28" },
+  { id: "MA001", name: "Đại số tuyến tính", credit: 3, type: "Tự chọn", examDate: "" },
+  { id: "ENG01", name: "Tiếng Anh chuyên ngành 1", credit: 2, type: "Tự chọn", examDate: "2026-01-15" }
+];
+
+// --- 2. Khai báo DOM Elements ---
+const tableBody = document.querySelector("#subjectTable tbody");
+const totalSubEl = document.getElementById("totalSub");
+const totalCredEl = document.getElementById("totalCred");
+const examCountEl = document.getElementById("examCount");
+const examAlertList = document.getElementById("examAlertList");
+
+// Inputs & Buttons
+const inpID = document.getElementById("maMon");
+const inpName = document.getElementById("tenMon");
+const inpCredit = document.getElementById("tinChi");
+const inpType = document.getElementById("loaiMon");
+const inpDate = document.getElementById("ngayThi");
+const btnAdd = document.getElementById("btnAdd");
+const btnUpdate = document.getElementById("btnUpdate");
+const btnCancel = document.getElementById("btnCancel");
+
+let isEditing = false;
+let currentEditId = null;
+
+// --- 3. Hàm tiện ích ---
+function formatDate(dateString) {
+  if (!dateString) return "<span style='color:#ccc'>--/--/----</span>";
+  const [y, m, d] = dateString.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+function getDaysRemaining(dateString) {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const target = new Date(dateString);
+    const diffTime = target - today;
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+}
+
+// Reset Form
+function resetForm() {
+  inpID.value = ""; inpName.value = ""; inpCredit.value = ""; inpDate.value = ""; inpType.value = "Bắt buộc";
+  inpID.disabled = false;
+  btnAdd.style.display = "inline-block";
+  btnUpdate.style.display = "none";
+  btnCancel.style.display = "none";
+  isEditing = false; currentEditId = null;
+}
+
+// --- 4. Render Table & Notifications ---
+function renderSubjects(data) {
+  tableBody.innerHTML = "";
+  examAlertList.innerHTML = "";
+  
+  let totalC = 0;
+  let examCount = 0;
+
+  // Clone mảng data để sắp xếp thông báo thi
+  let examData = [...data].filter(s => s.examDate !== "").sort((a,b) => new Date(a.examDate) - new Date(b.examDate));
+
+  // Render Table
+  data.forEach((sub) => {
+    const tr = document.createElement("tr");
+    const badgeClass = sub.type === "Bắt buộc" ? "badge-bb" : "badge-tc";
+    if(sub.examDate) examCount++;
+
+    tr.innerHTML = `
+      <td><b>${sub.id}</b></td>
+      <td>${sub.name}</td>
+      <td style="text-align:center">${sub.credit}</td>
+      <td style="text-align:center"><span class="badge ${badgeClass}">${sub.type}</span></td>
+      <td style="text-align:center">${formatDate(sub.examDate)}</td>
+      <td style="text-align:center">
+        <span class="action-btn edit" onclick="startEdit('${sub.id}')" title="Sửa">✏️</span>
+        <span class="action-btn del" onclick="deleteSubject('${sub.id}')" title="Xóa">🗑️</span>
+      </td>
+    `;
+    tableBody.appendChild(tr);
+    totalC += parseInt(sub.credit);
+  });
+
+  // Render Exam Alerts
+  if(examData.length === 0) {
+      examAlertList.innerHTML = "<li style='color:#666; font-style:italic; padding:10px'>Chưa có lịch thi nào.</li>";
+  } else {
+      examData.forEach(sub => {
+          const daysLeft = getDaysRemaining(sub.examDate);
+          let classStatus = "upcoming";
+          let textStatus = `Còn ${daysLeft} ngày`;
+          
+          if (daysLeft < 0) {
+              textStatus = "Đã thi xong";
+              classStatus = "";
+          } else if (daysLeft <= 7) {
+              classStatus = "urgent";
+          }
+
+          if(daysLeft >= 0) {
+            const li = document.createElement("li");
+            li.className = `exam-item ${classStatus}`;
+            li.innerHTML = `
+                <div>
+                    <b>${sub.name}</b> (${sub.id})<br>
+                    <span style="color:#666;font-size:11px">Ngày thi: ${formatDate(sub.examDate)}</span>
+                </div>
+                <div class="days-left">${textStatus}</div>
+            `;
+            examAlertList.appendChild(li);
+          }
+      });
+  }
+
+  // Update Stats
+  totalSubEl.textContent = data.length;
+  totalCredEl.textContent = totalC;
+  examCountEl.textContent = examCount;
+}
+
+// --- Logic Thêm/Sửa/Xóa ---
+btnAdd.addEventListener("click", () => {
+  const id = inpID.value.trim().toUpperCase();
+  const name = inpName.value.trim();
+  const credit = inpCredit.value;
+  const type = inpType.value;
+  const examDate = inpDate.value;
+
+  if (!id || !name || !credit) { alert("Vui lòng nhập Mã, Tên và Tín chỉ!"); return; }
+  if (subjects.some(s => s.id === id)) { alert("Mã môn học đã tồn tại!"); return; }
+
+  subjects.push({ id, name, credit, type, examDate });
+  renderSubjects(subjects);
+  resetForm();
+});
+
+window.deleteSubject = function(id) {
+  if (confirm(`Bạn có chắc muốn xóa môn [${id}] không?`)) {
+    subjects = subjects.filter(s => s.id !== id);
+    if(isEditing && currentEditId === id) resetForm();
+    renderSubjects(subjects);
+  }
+};
+
+window.startEdit = function(id) {
+  const sub = subjects.find(s => s.id === id);
+  if(!sub) return;
+  inpID.value = sub.id; inpName.value = sub.name; inpCredit.value = sub.credit; inpType.value = sub.type; inpDate.value = sub.examDate;
+  inpID.disabled = true;
+  btnAdd.style.display = "none"; btnUpdate.style.display = "inline-block"; btnCancel.style.display = "inline-block";
+  isEditing = true; currentEditId = id;
+};
+
+btnUpdate.addEventListener("click", () => {
+  if(!isEditing) return;
+  const newName = inpName.value.trim(); const newCredit = inpCredit.value; const newType = inpType.value; const newDate = inpDate.value;
+  if (!newName || !newCredit) { alert("Vui lòng nhập Tên và Tín chỉ!"); return; }
+
+  subjects = subjects.map(s => {
+    if (s.id === currentEditId) { return { ...s, name: newName, credit: newCredit, type: newType, examDate: newDate }; }
+    return s;
+  });
+  renderSubjects(subjects); resetForm();
+});
+
+btnCancel.addEventListener("click", resetForm);
+
+document.getElementById("searchInput").addEventListener("keyup", (e) => {
+  const term = e.target.value.toLowerCase();
+  const filtered = subjects.filter(s => s.id.toLowerCase().includes(term) || s.name.toLowerCase().includes(term));
+  renderSubjects(filtered);
+});
+
+// Init Date
+const d = new Date();
+document.getElementById("calDay").textContent = d.getDate();
+document.getElementById("calMonth").textContent = `Tháng ${d.getMonth()+1}, ${d.getFullYear()}`;
+renderSubjects(subjects);
+
+
+// --- XỬ LÝ MENU MOBILE (PHẦN MỚI THÊM) ---
+const menuToggle = document.getElementById('menuToggle');
+const mainNav = document.getElementById('mainNav');
+
+menuToggle.addEventListener('click', (e) => {
+    e.stopPropagation(); // Ngăn sự kiện click lan ra ngoài
+    mainNav.classList.toggle('active');
+    
+    // Đổi icon
+    if (mainNav.classList.contains('active')) {
+        menuToggle.textContent = '✕';
+    } else {
+        menuToggle.textContent = '☰';
+    }
+});
+
+// Click ra ngoài thì đóng menu
+document.addEventListener('click', (e) => {
+    if (!menuToggle.contains(e.target) && !mainNav.contains(e.target)) {
+        mainNav.classList.remove('active');
+        menuToggle.textContent = '☰';
+    }
+});
+
+</script>
+</body>
+</html>

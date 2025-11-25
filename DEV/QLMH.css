@@ -1,0 +1,440 @@
+
+  /* --- RESET & GLOBAL --- */
+  * {
+    box-sizing: border-box;
+    font-family: "Segoe UI", sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background: #f2f5f8;
+    color: #333;
+    width: 100vw;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* --- HEADER --- */
+  header {
+    display: flex;
+    align-items: center;
+    padding: 12px 40px;
+    background: #009fe3;
+    color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    justify-content: space-between;
+    position: relative;
+    z-index: 1001; /* Đảm bảo header luôn nổi trên cùng */
+  }
+
+  header nav {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 30px;
+  }
+
+  header nav a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.3s;
+  }
+
+  header nav a:hover,
+  header nav a.active {
+    text-decoration: underline;
+    font-weight: 700;
+  }
+
+  .logo-left {
+    font-weight: bold;
+    font-size: 18px;
+  }
+
+  /* Nút Menu Mobile (Mặc định ẩn trên PC) */
+  .menu-toggle {
+    display: none;
+    font-size: 26px;
+    cursor: pointer;
+    color: #fff;
+    user-select: none;
+  }
+
+  /* --- BỐ CỤC CHÍNH (LAYOUT) --- */
+  main {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 40px 50px;
+    width: 100%;
+  }
+
+  /* --- SIDEBAR (BÊN TRÁI) --- */
+  .month-calendar {
+    width: 250px;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    height: fit-content;
+    flex-shrink: 0;
+  }
+
+  .month-calendar h3 {
+    text-align: center;
+    margin-bottom: 10px;
+    color: #046b99;
+    font-size: 16px;
+  }
+
+  .stat-box {
+    margin-top: 15px;
+    padding: 10px;
+    background: #e9f6ff;
+    border-radius: 6px;
+    border: 1px solid #dde;
+  }
+
+  .stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .stat-item span {
+    font-weight: bold;
+    color: #046b99;
+  }
+
+  /* --- NỘI DUNG CHÍNH (CONTENT) --- */
+  .content {
+    flex: 1;
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  h2 {
+    margin-bottom: 20px;
+    color: #222;
+    font-size: 20px;
+  }
+
+  /* --- FORM & NÚT BẤM --- */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 25px;
+    align-items: center;
+  }
+
+  select,
+  input,
+  button {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    height: 38px;
+  }
+
+  input:disabled {
+    background: #e9ecef;
+    cursor: not-allowed;
+    color: #6c757d;
+  }
+
+  button {
+    background: #046b99;
+    color: white;
+    cursor: pointer;
+    border: none;
+    transition: 0.3s;
+    padding: 0 15px;
+    white-space: nowrap;
+  }
+
+  button:hover {
+    background: #03567a;
+  }
+
+  #btnUpdate {
+    background: #28a745;
+    display: none;
+  }
+
+  #btnUpdate:hover {
+    background: #218838;
+  }
+
+  #btnCancel {
+    background: #6c757d;
+    display: none;
+  }
+
+  #btnCancel:hover {
+    background: #5a6268;
+  }
+
+  /* --- BẢNG DỮ LIỆU (TABLE) --- */
+  .table-container {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 14px;
+  }
+
+  th,
+  td {
+    border: 1px solid #eee;
+    padding: 12px;
+  }
+
+  th {
+    background: #f1f9ff;
+    color: #046b99;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  td {
+    vertical-align: middle;
+  }
+
+  /* --- BADGE (NHÃN TRẠNG THÁI) --- */
+  .badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    display: inline-block;
+    min-width: 70px;
+    text-align: center;
+  }
+
+  .badge-tc {
+    background: #e2e3e5;
+    color: #383d41;
+  }
+
+  .badge-bb {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  /* --- NÚT HÀNH ĐỘNG (ICON) --- */
+  .action-btn {
+    cursor: pointer;
+    font-size: 18px;
+    margin: 0 5px;
+    transition: 0.2s;
+    display: inline-block;
+  }
+
+  .action-btn.edit {
+    color: #f0ad4e;
+  }
+
+  .action-btn.edit:hover {
+    color: #d98d28;
+    transform: scale(1.2);
+  }
+
+  .action-btn.del {
+    color: #dc3545;
+  }
+
+  .action-btn.del:hover {
+    color: #c82333;
+    transform: scale(1.2);
+  }
+
+  /* --- KHU VỰC THÔNG BÁO --- */
+  .notification-area {
+    margin-top: 30px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .notif-card {
+    flex: 1;
+    min-width: 300px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  }
+
+  .notif-card h3 {
+    font-size: 16px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* --- DANH SÁCH LỊCH THI --- */
+  .exam-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .exam-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fdfdfd;
+    padding: 10px;
+    border-left: 4px solid #ccc;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .exam-item.urgent {
+    border-left-color: #dc3545;
+    background: #fff5f5;
+  }
+
+  .exam-item.upcoming {
+    border-left-color: #009fe3;
+    background: #f0f8ff;
+  }
+
+  .days-left {
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .urgent .days-left {
+    color: #dc3545;
+    background: #ffe6e6;
+  }
+
+  .upcoming .days-left {
+    color: #009fe3;
+    background: #e6f7ff;
+  }
+
+  /* --- DANH SÁCH TIN TỨC --- */
+  .news-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .news-list li {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .news-list li::before {
+    content: "•";
+    color: #009fe3;
+    font-weight: bold;
+    font-size: 18px;
+    position: absolute;
+    left: 0;
+    top: -2px;
+  }
+
+  .news-date {
+    font-size: 11px;
+    color: #888;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* --- RESPONSIVE MOBILE --- */
+  @media (max-width: 1024px) {
+    main {
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    .month-calendar,
+    .content {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+      margin-bottom: 5px;
+    }
+
+    .logo-left {
+      display: none;
+    }
+
+    /* Hiển thị nút menu */
+    .menu-toggle {
+      display: block;
+    }
+
+    /* Ẩn menu mặc định, chuyển sang dạng dọc */
+    header nav {
+      display: none; /* Ẩn đi */
+      position: absolute;
+      top: 100%; /* Đẩy xuống ngay dưới header */
+      left: 0;
+      width: 100%;
+      background: #008dc9; /* Màu nền cho menu mobile */
+      flex-direction: column;
+      transform: none; /* Bỏ căn giữa */
+      gap: 0;
+      z-index: 1000;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    /* Khi có class active thì hiện ra */
+    header nav.active {
+      display: flex;
+    }
+
+    header nav a {
+      display: block;
+      padding: 15px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      width: 100%;
+    }
+    
+    header nav a:hover {
+        background: rgba(0,0,0,0.1);
+        text-decoration: none;
+    }
+
+    .notification-area {
+      flex-direction: column;
+    }
+  }
+

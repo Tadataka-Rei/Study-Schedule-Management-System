@@ -1,8 +1,6 @@
 <?php
-// Include the database connection. Assumes $pdo is available after this.
 include_once '../Core/db.php';
 
-// --- Configuration ---
 $admin_tables = [
     'Users', 'Courses', 'User_Courses', 'Assignments', 
     'User_Assignments', 'Notes', 'Files', 'Time_Tables', 
@@ -13,17 +11,14 @@ $view = $_GET['view'] ?? 'dashboard';
 $table_name = $_GET['table'] ?? null;
 $message = '';
 
-// --- CRUD Functions (CREATE/ADD Logic for Users Table) ---
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_user_submit'])) {
     
-    // 1. Collect and Sanitize Input
     $username = trim($_POST['username']);
     $email = trim($_POST['email']);
-    $password = $_POST['password']; // Raw password
+    $password = $_POST['password']; 
     $role = $_POST['role'];
-    
-    // Simple basic validation
+
     if (empty($username) || empty($email) || empty($password) || empty($role)) {
         $message = '<div class="alert alert-danger">Error: All required fields must be filled.</div>';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -31,11 +26,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_user_submit'])) {
     } elseif (strlen($password) < 6) {
         $message = '<div class="alert alert-danger">Error: Password must be at least 6 characters.</div>';
     } else {
-        // 2. Hash Password (CRITICAL for security)
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
         
         try {
-            // 3. Prepare and Execute INSERT Query
             $sql = "INSERT INTO Users (username, email, password_hash, role) 
                     VALUES (:username, :email, :password_hash, :role)";
             $stmt = $pdo->prepare($sql);
@@ -47,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_user_submit'])) {
                 'role' => $role
             ]);
             
-            $message = '<div class="alert alert-success">✅ User **' . htmlspecialchars($username) . '** added successfully!</div>';
+            $message = '<div class="alert alert-success">User' . htmlspecialchars($username) . '** added successfully!</div>';
             
         } catch (PDOException $e) {
             // Check for specific error like duplicate entry
@@ -61,16 +54,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_user_submit'])) {
 }
 
 
-/**
- * Fetches all records from a given table.
- */
+// get all tabble
 function fetch_table_data(PDO $pdo, string $table): ?array {
     global $admin_tables, $message;
     if (!in_array($table, $admin_tables)) {
         return null;
     }
     try {
-        // Fetch up to 100 records and order by primary key descending (most recent first)
         $pk_column = ($table === 'Users') ? 'user_id' : (($table === 'Courses') ? 'course_id' : '1');
         $stmt = $pdo->query("SELECT * FROM `$table` ORDER BY $pk_column DESC LIMIT 100"); 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -98,9 +88,9 @@ function fetch_table_data(PDO $pdo, string $table): ?array {
 <body>
 
 <div class="container-fluid container">
-    <h1 class="mb-4">📚 App Database Admin Panel</h1>
+    <h1 class="mb-4">Database Admin Panel</h1>
     
-    <?php echo $message; // Display success/error messages ?>
+    <?php echo $message; ?>
 
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
@@ -132,12 +122,11 @@ function fetch_table_data(PDO $pdo, string $table): ?array {
         <h2>**<?php echo htmlspecialchars($table_name); ?>** Data Management</h2>
 
         <?php 
-        // 1. ADD NEW USER FORM (Only for the Users Table)
         if ($table_name === 'Users'): 
         ?>
             <div class="card mb-4">
                 <div class="card-header bg-success text-white">
-                    ➕ **Add New User**
+                    + **Add New User**
                 </div>
                 <div class="card-body">
                     <form method="POST" action="admin.php?view=view_table&table=Users">

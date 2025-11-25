@@ -25,11 +25,13 @@ CREATE TABLE Courses (
     starting_date DATE NULL, -- ngày bắt đầu khóa học
     ending_date DATE NULL, -- ngày kết thúc khóa học (Nếu rỗng thì là không xác định)
 
+    -- CÔNG VIỆC: TẠO BẢNG SQL ĐỂ ĐƯA VÔ BÁO CÁO, ok?
+
     FOREIGN KEY (teacher_id) REFERENCES Users(user_id)
         ON DELETE RESTRICT
 );
 
--- User_Courses Table (Enrollment)
+-- User_Courses Table
 CREATE TABLE User_Courses (
     enrollment_id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
