@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Đăng nhập - SSMS</title>
+  <link rel="stylesheet" href="login.css ">
+</head>
+
+<body class="login-page">
+
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-logo">SSMS</div>
+      <h2>Đăng nhập</h2>
+
+      <form id="loginForm">
+        <div class="input-group">
+          <input type="text" id="loginUser" required>
+          <label for="loginUser">Tên đăng nhập</label>
+        </div>
+
+        <div class="input-group">
+          <input type="password" id="loginPass" required>
+          <label for="loginPass">Mật khẩu</label>
+        </div>
+
+        <button type="submit" class="btn login-btn">Đăng nhập</button>
+        <p id="authMessage" style="color: red; margin-top: 10px;"></p>
+      </form>
+
+      <p class="alt-link">Chưa có tài khoản? <a href="register.html">Đăng ký ngay</a></p>
+      <p class="alt-link"><a href="index.html">Bỏ qua đăng nhập →</a></p>
+    </div>
+  </div>
+
+  <script>
+
+    const LOGIN_API_URL = '../../app/Core/API/login.php';
+
+    // Get the form and message elements
+    const loginForm = document.getElementById('loginForm');
+    const messageDisplay = document.getElementById('authMessage');
+
+    // Change the event listener from onclick to form submit for better accessibility
+    loginForm.addEventListener('submit', handleLogin);
+
+    async function handleLogin(event) {
+      event.preventDefault(); // Stop the default page reload/navigation
+
+      const username = document.getElementById("loginUser").value.trim();
+      const password = document.getElementById("loginPass").value;
+
+      if (!username || !password) {
+        messageDisplay.textContent = "Vui lòng nhập đầy đủ thông tin!";
+        return;
+      }
+
+      messageDisplay.textContent = 'Đang đăng nhập...';
+
+      const loginData = {
+        username: username,
+        password: password
+      };
+
+      try {
+        const response = await fetch(LOGIN_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(loginData)
+        });
+
+        const result = await response.json(); // API returns JSON data
+
+        if (response.ok) {
+          // SUCCESS (HTTP 200)
+          messageDisplay.textContent = 'Đăng nhập thành công!';
+          messageDisplay.style.color = 'green';
+
+          // --- Crucial Authentication Step ---
+          // You should save the user's role and/or a token here.
+          // For now, we'll save the username to show who's logged in.
+          localStorage.setItem("currentUser", username);
+          localStorage.setItem("userRole", result.role);
+
+          // Redirect the user
+          window.location.href = "index.php";
+
+        } else {
+          // FAILURE (e.g., HTTP 401 Unauthorized)
+          // The API sends the error message in the 'message' field
+          messageDisplay.textContent = result.message || 'Lỗi đăng nhập không xác định!';
+          messageDisplay.style.color = 'red';
+        }
+
+      } catch (error) {
+        console.error('Lỗi mạng hoặc API:', error);
+        messageDisplay.textContent = 'Không thể kết nối đến máy chủ. Vui lòng thử lại.';
+        messageDisplay.style.color = 'red';
+      }
+    }
+  </script>
+
+</body>
+
+</html>

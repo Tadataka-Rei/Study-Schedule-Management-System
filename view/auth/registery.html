@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi">
+<!-- Token-Based Authentication because i hate myself -->
+
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng ký Tài khoản - SSMS</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+
+<body class="login-page">
+
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-logo">SSMS</div>
+            <h2>Đăng ký Tài khoản</h2>
+
+            <form id="registerForm">
+
+                <div class="input-group">
+                    <input type="text" id="regUser" required>
+                    <label for="regUser">Tên đăng nhập</label>
+                </div>
+
+                <div class="input-group">
+                    <input type="email" id="regEmail" required>
+                    <label for="regEmail">Email</label>
+                </div>
+
+                <div class="input-group">
+                    <input type="password" id="regPass" required>
+                    <label for="regPass">Mật khẩu</label>
+                </div>
+
+                <div class="input-group">
+                    <input type="password" id="regPassConfirm" required>
+                    <label for="regPassConfirm">Xác nhận Mật khẩu</label>
+                </div>
+
+                <div class="input-group select-group">
+                    <select id="regRole" required>
+                        <option value="" disabled selected>Chọn Vai trò</option>
+                        <option value="Individual">Cá nhân</option>
+                        <option value="Student">Học sinh/Sinh viên</option>
+                        <option value="Teacher">Giáo viên</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn login-btn">Đăng ký</button>
+                <p id="regMessage" style="margin-top: 15px; font-weight: bold;"></p>
+            </form>
+
+            <p class="alt-link">Đã có tài khoản? <a href="login.php">Đăng nhập ngay</a></p>
+            <p class="alt-link"><a href="../../public/index.php">Bỏ qua đăng nhập →</a></p>
+        </div>
+    </div>
+
+    <script>
+        const REGISTER_API_URL = '../../app/Core/API/register.php';
+
+        const registerForm = document.getElementById('registerForm');
+        const messageDisplay = document.getElementById('regMessage');
+
+        registerForm.addEventListener('submit', handleRegistration);
+
+        async function handleRegistration(event) {
+            event.preventDefault();
+
+            // --Input---
+            const username = document.getElementById("regUser").value.trim();
+            const email = document.getElementById("regEmail").value.trim();
+            const password = document.getElementById("regPass").value;
+            const passConfirm = document.getElementById("regPassConfirm").value;
+            const role = document.getElementById("regRole").value;
+
+            messageDisplay.textContent = '';
+            messageDisplay.style.color = 'red';
+
+            // --- Frontend Validation (Quick checks before API call) ---
+            if (!username || !email || !password || !passConfirm || !role) {
+                messageDisplay.textContent = "Vui lòng nhập đầy đủ các trường.";
+                return;
+            }
+            if (password !== passConfirm) {
+                messageDisplay.textContent = "Mật khẩu và Xác nhận Mật khẩu không khớp!";
+                return;
+            }
+            if (password.length < 8) {
+                messageDisplay.textContent = "Mật khẩu phải có ít nhất 8 ký tự.";
+                return;
+            }
+            if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
+                messageDisplay.textContent = "Email không hợp lệ.";
+                return;
+            }
+
+            messageDisplay.textContent = 'Đang tiến hành đăng ký...';
+            messageDisplay.style.color = 'gray';
+
+            const registrationData = {
+                username: username,
+                email: email,
+                password: password,
+                role: role
+            };
+
+            try {
+
+                const response = await fetch(REGISTER_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(registrationData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+
+                    messageDisplay.textContent = 'Đăng ký thành công! Chuyển hướng đến trang đăng nhập...';
+                    messageDisplay.style.color = 'green';
+
+                    setTimeout(() => {
+                        window.location.href = "./login.html";
+                    }, 1500);
+
+                } else {
+                    //FUCK YOU
+                    messageDisplay.textContent = `Đăng ký thất bại: ${result.message || 'Lỗi không xác định!'}`;
+                    messageDisplay.style.color = 'red';
+                }
+
+            } catch (error) {
+                console.error('Lỗi mạng hoặc API:', error);
+                messageDisplay.textContent = 'Không thể kết nối đến máy chủ. Vui lòng thử lại.';
+                messageDisplay.style.color = 'red';
+            }
+        }
+    </script>
+
+</body>
+
+</html>
