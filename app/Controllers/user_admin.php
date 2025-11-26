@@ -416,12 +416,12 @@ if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] ===
                 
                 <div>
                     <label for="email">Email <span>*</span></label>
-                    <input type="email" id="email" name="email" required class="form-input" placeholder="Ví dụ: user@example.com">
+                    <input type="email" id="email" name="email" required class="form-input" placeholder="Ví dụ: fuckme@example.com">
                 </div>
                 
                 <div>
                     <label for="password">Mật Khẩu <span>*</span></label>
-                    <input type="password" id="password" name="password" required class="form-input" placeholder="Nhập mật khẩu (Sẽ được băm)">
+                    <input type="password" id="password" name="password" required class="form-input" placeholder="Nhập mật khẩu (Sẽ được hash)">
                 </div>
                 
                 <div>
