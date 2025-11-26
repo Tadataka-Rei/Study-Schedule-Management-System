@@ -1,713 +1,397 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Thời khóa biểu tuần</title>
-<link rel="stylesheet" href="style.css">
-<style>
-  
-  *{
-  box-sizing: border-box;
-  font-family: "Segoe UI", sans-serif;
-  margin: 0;
-  padding: 0;
-}
-
-body{
-  background: #f2f5f8;
-  color: #333;
-  width: 100vw;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-header {
-  display: flex;
-  align-items: center;
-  padding: 12px 40px;
-  background: #009fe3;
-  color: #fff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  justify-content: space-between; /* logo-left và avatar bên phải */
-  position: relative;
-}
-
-header nav {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 30px;
-}
-
-
-header nav a{
-  color: #fff;
-  text-decoration: none;
-  font-weight: 500;
-  transition: 0.3s;
-}
-
-header nav a:hover{
-  text-decoration: underline;
-}
-
-.logo-left, .logo-right{
-  font-weight: bold;
-  font-size: 18px;
-}
-
-
-main{
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
-  padding: 40px 50px;
-  width: 100%;
-}
-
-.month-calendar{
-  width: 250px;
-  border-radius: 10px;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  padding: 15px;
-  height: fit-content;
-  flex-shrink: 0;
-}
-
-.month-calendar h3{
-  text-align: center;
-  margin-bottom: 10px;
-  color: #046b99;
-  font-size: 16px;
-}
-
-.month-calendar table{
-  width: 100%;
-  border-collapse: collapse;
-  text-align: center;
-  table-layout: fixed;
-}
-
-.month-calendar th{
-  background: #e9f6ff;
-  padding: 4px;
-  border: 1px solid #dde;
-  font-weight: 600;
-  font-size: 12px;
-  color: #046b99;
-}
-
-.month-calendar td{
-  padding: 6px 0;
-  border: 1px solid #f0f0f0;
-  font-size: 12px;
-  transition: 0.2s;
-}
-
-.month-calendar td.today{
-  background: #009fe3;
-  color: #fff;
-  font-weight: bold;
-  border-radius: 4px;
-}
-
-.content{
-  flex: 1;
-  background: #fff;
-  border-radius: 12px;
-  padding: 30px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-h2{
-  margin-bottom: 20px;
-  color: #222;
-  font-size: 20px;
-}
-
-.controls{
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 25px;
-  align-items: center;
-}
-
-select,
-input,
-button,
-textarea{
-  padding: 8px 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-input,
-textarea{
-  flex: 1;
-  min-width: 80px;
-}
-
-textarea{
-  resize: none;
-}
-
-button{
-  background: #046b99;
-  color: white;
-  cursor: pointer;
-  border: none;
-  transition: 0.3s;
-  padding: 9px 14px;
-}
-
-button:hover{
-  background: #03567a;
-}
-
-button#delBtn{
-  background: #777;
-}
-
-.schedule{
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  overflow-x: auto;
-  margin-bottom: 20px;
-}
-
-table{
-  width: 100%;
-  border-collapse: collapse;
-  text-align: center;
-  font-size: 14px;
-}
-
-th,
-td{
-  border: 1px solid #eee;
-  padding: 12px;
-  min-width: 120px;
-}
-
-th{
-  background: #f1f9ff;
-  color: #046b99;
-}
-
-.time-col{
-  background: #f8f8f8;
-  font-weight: bold;
-  width: 80px;
-}
-
-/* Bảng nổi bật và ghi chú */
-#highlightSubjects th, #highlightSubjects td,
-#notesTable th, #notesTable td{
-  border:1px solid #ddd;
-  padding:8px;
-  text-align:left;
-  font-size:13px;
-}
-#highlightSubjects th, #notesTable th{
-  background:#f1f9ff;
-  color:#046b99;
-}
-#highlightSubjects{margin-top:20px;}
-#notesTable{margin-top:20px;}
-#noteControls{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;}
-#noteControls textarea{flex:1;min-height:60px;}
-.note-action{cursor:pointer;margin-left:5px;font-size:14px;color:#046b99;}
-.note-action:hover{color:#d9534f;}
-
-
-/* ============================
-      RESPONSIVE CHO TABLET
-      (Tối đa 1024px)
-===============================*/
-@media (max-width: 1024px) {
-
-  /* Bố cục chính chuyển thành 1 cột */
-  main {
-    flex-direction: column;
-    padding: 30px 25px;
-  }
-
-  /* Lịch tháng xuống dưới nội dung */
-  .month-calendar {
-    width: 100%;
-    order: 2;
-    margin-top: 20px;
-  }
-
-  .content {
-    width: 100%;
-    order: 1;
-  }
-
-  /* Menu trên header thu nhỏ khoảng cách */
-  header nav {
-    gap: 18px;
-  }
-}
-
-
-/* ============================
-      RESPONSIVE CHO MOBILE
-      (Tối đa 768px)
-===============================*/
-@media (max-width: 768px) {
-
-  /* ---- Menu mobile ---- */
-  #mainNav {
-    display: none;
-    flex-direction: column;
-    background: #009fe3;
-    width: 100%;
-    position: absolute;
-    top: 60px;
-    left: 0;
-    padding: 15px 0;
-    text-align: center;
-    gap: 15px;
-    z-index: 20;
-  }
-
-  #mainNav.active {
-    display: flex;
-  }
-
-  .menu-toggle {
-    display: block;
-    font-size: 28px;
-    cursor: pointer;
-    padding: 5px 15px;
-    margin-left: auto;
-  }
-
-  header {
-    padding: 12px 20px;
-  }
-
-  /* ---- Bố cục chính ---- */
-  main {
-    flex-direction: column;
-    padding: 20px;
-  }
-
-  .month-calendar {
-    width: 100%;
-    order: 2;
-  }
-
-  .content {
-    width: 100%;
-    order: 1;
-    padding: 20px;
-  }
-
-  /* ---- Form controls co giãn ---- */
-  .controls {
-    flex-direction: column;
-    width: 100%;
-    align-items: flex-start;
-  }
-
-  .controls select,
-  .controls input,
-  .controls button {
-    width: 100%;
-  }
-
-  #noteControls {
-    flex-direction: column;
-  }
-
-  #noteControls textarea {
-    width: 100%;
-  }
-
-  /* ---- Schedule table ---- */
-  .schedule {
-    overflow-x: auto;
-  }
-
-  table th, table td {
-    min-width: 90px;
-    font-size: 12px;
-  }
-
-  .time-col {
-    min-width: 60px;
-  }
-
-  /* ---- Các bảng ghi chú & nổi bật ---- */
-  #highlightSubjects th, #highlightSubjects td,
-  #notesTable th, #notesTable td {
-    font-size: 12px;
-    padding: 6px;
-  }
-}
-
-
-/* ============================
-      MÀN CỰC NHỎ < 480px
-===============================*/
-/* ----- Mobile: thay chữ SSMS bằng menu ☰ ----- */
-/* ============================
-   MENU MOBILE (Fix đẹp – không hụt)
-============================ */
-@media (max-width: 768px) {
-
-  /* Ẩn chữ SSMS */
-  .logo-text {
-    display: none;
-  }
-
-  /* Nút 3 gạch bên trái */
-  .menu-toggle {
-    display: block !important;
-    position: absolute;
-    left: 15px;
-    top: 12px;
-    font-size: 32px;
-    cursor: pointer;
-    z-index: 1001;
-  }
-
-  header {
-    padding: 15px 20px;
-    height: 60px;
-    position: relative;
-  }
-
-  /* Menu thả xuống */
-  #mainNav {
-    display: none;
-    position: absolute;
-    top: 60px; /* đặt ngay dưới header */
-    left: 0;
-    width: 100%;
-    background: #009fe3;
-    padding: 15px 0;
-    flex-direction: column;
-    text-align: center;
-    gap: 18px;
-    z-index: 1000;
-
-    /* hiệu ứng hiển thị mềm hơn */
-    opacity: 0;
-    transform: translateY(-10px);
-    transition: 0.25s ease;
-  }
-
-  #mainNav.active {
-    display: flex;
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  /* Avatar đẩy về phải */
-  .logo-link {
-    margin-left: auto !important;
-  }
-}
-
-
-
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thời khóa biểu tuần</title>
+  <link rel="stylesheet" href="index.css">
 </head>
+
 <body>
-<header>
-  <div class="logo-left">
-  <span class="logo-text">SSMS</span>
- 
-</div>
+  <header>
+    <div class="logo-left">
+      <span class="logo-text" id="logoText">SSMS</span>
+
+    </div>
 
 
-  <!-- Nút menu hamburger cho mobile -->
-  <div class="menu-toggle" id="menuToggle">☰</div>
+    <!-- Nút menu hamburger cho mobile -->
+    <div class="menu-toggle" id="menuToggle">☰</div>
 
-  <nav id="mainNav">
-    <a href="index.html">Trang chủ</a>
-    <a href="QLLHT.html">Quản lý môn học</a>
-    <a href="#">Tra cứu môn học</a>
-  </nav>
+    <nav id="mainNav">
+      <a href="index.html">Trang chủ</a>
+      <a href="QLLHT.html">Quản lý môn học</a>
+      <a href="#">Tra cứu môn học</a>
+    </nav>
 
-  <a href="login.html" class="logo-link" style="margin-left:auto;">
-    <img src="logo.svg" alt="User" style="width:46px;height:46px;border-radius:50%;border:2px solid #fff">
-  </a>
-</header>
+    <a href="login.html" class="logo-link" style="margin-left:auto;">
+      <img src="logo.svg" alt="User" style="width:46px;height:46px;border-radius:50%;border:2px solid #fff">
+    </a>
+  </header>
 
 
 
-<main>
-<aside class="month-calendar">
-  <h3 id="monthTitle">Tháng</h3>
-  <table>
-    <thead>
-      <tr><th>CN</th><th>T2</th><th>T3</th><th>T4</th><th>T5</th><th>T6</th><th>T7</th></tr>
-    </thead>
-    <tbody id="calendarBody"></tbody>
-  </table>
+  <main>
+    <aside class="month-calendar">
+      <h3 id="monthTitle">Tháng</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>CN</th>
+            <th>T2</th>
+            <th>T3</th>
+            <th>T4</th>
+            <th>T5</th>
+            <th>T6</th>
+            <th>T7</th>
+          </tr>
+        </thead>
+        <tbody id="calendarBody"></tbody>
+      </table>
 
-  <!-- Chọn năm để xem môn học nổi bật -->
-  <label for="yearSelect">Chọn năm:</label>
-  <select id="yearSelect"></select>
+      <!-- Chọn năm để xem môn học nổi bật -->
+      <label for="yearSelect">Chọn năm:</label>
+      <select id="yearSelect"></select>
 
-  <!-- Bảng môn học nổi bật -->
-  <h3>Môn học nổi bật</h3>
-  <table id="highlightSubjects">
-    <thead>
-      <tr><th>Môn học</th><th>Ghi chú</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</aside>
+      <!-- Bảng môn học nổi bật -->
+      <h3>Môn học nổi bật</h3>
+      <table id="highlightSubjects">
+        <thead>
+          <tr>
+            <th>Môn học</th>
+            <th>Ghi chú</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </aside>
 
-<div class="content">
-<h2>Thời khóa biểu tuần</h2>
-<div class="controls">
-  <label>Chọn tuần:</label>
-  <select id="weekSelect"></select>
+    <div class="content">
+      <h2>Thời khóa biểu tuần</h2>
+      <div class="controls">
+        <label>Chọn tuần:</label>
+        <select id="weekSelect"></select>
 
-  <input type="text" placeholder="Tên môn" id="subjectInput">
-  <select id="daySelect">
-    <option>Thứ 2</option><option>Thứ 3</option><option>Thứ 4</option>
-    <option>Thứ 5</option><option>Thứ 6</option>
-    <option>Thứ 7</option><option>Chủ nhật</option>
-  </select>
+        <input type="text" placeholder="Tên môn" id="subjectInput">
+        <select id="daySelect">
+          <option>Thứ 2</option>
+          <option>Thứ 3</option>
+          <option>Thứ 4</option>
+          <option>Thứ 5</option>
+          <option>Thứ 6</option>
+          <option>Thứ 7</option>
+          <option>Chủ nhật</option>
+        </select>
 
-  <label>Giờ bắt đầu:</label>
-  <select id="startTime"></select>
-  <label>Giờ kết thúc:</label>
-  <select id="endTime"></select>
+        <label>Giờ bắt đầu:</label>
+        <select id="startTime"></select>
+        <label>Giờ kết thúc:</label>
+        <select id="endTime"></select>
 
-  <button id="addBtn">Thêm vào lịch</button>
-  <button id="delBtn">Xóa tuần hiện tại</button>
-</div>
+        <button id="addBtn">Thêm vào lịch</button>
+        <button id="delBtn">Xóa tuần hiện tại</button>
+      </div>
 
-<div class="schedule">
-<table id="scheduleTable">
-<thead>
-  <tr>
-    <th class="time-col">Giờ</th>
-    <th>Thứ 2</th><th>Thứ 3</th><th>Thứ 4</th><th>Thứ 5</th><th>Thứ 6</th><th>Thứ 7</th><th>CN</th>
-  </tr>
-</thead>
-<tbody>
-  <tr><td class="time-col">07:00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-  <tr><td class="time-col">08:30</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-  <tr><td class="time-col">10:40</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-  <tr><td class="time-col">13:00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-  <tr><td class="time-col">14:30</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-  <tr><td class="time-col">16:30</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-  <tr><td class="time-col">17:00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-  <tr><td class="time-col">20:00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-</tbody>
-</table>
-</div>
+      <div class="schedule">
+        <table id="scheduleTable">
+          <thead>
+            <tr>
+              <th class="time-col">Giờ</th>
+              <th>Thứ 2</th>
+              <th>Thứ 3</th>
+              <th>Thứ 4</th>
+              <th>Thứ 5</th>
+              <th>Thứ 6</th>
+              <th>Thứ 7</th>
+              <th>CN</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="time-col">07:00</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="time-col">08:30</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="time-col">10:40</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="time-col">13:00</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="time-col">14:30</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="time-col">16:30</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="time-col">17:00</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="time-col">20:00</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-<!-- Ghi chú chi tiết -->
-<h3>Ghi chú chi tiết</h3>
-<div id="noteControls">
-  <textarea id="noteInput" placeholder="Nhập ghi chú..."></textarea>
-  <button id="saveNoteBtn">Lưu ghi chú</button>
-</div>
-<table id="notesTable">
-  <thead>
-    <tr><th>Ngày giờ</th><th>Nội dung</th><th>Thao tác</th></tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
-</div>
-</main>
+      <!-- Ghi chú chi tiết -->
+      <h3>Ghi chú chi tiết</h3>
+      <div id="noteControls">
+        <textarea id="noteInput" placeholder="Nhập ghi chú..."></textarea>
+        <button id="saveNoteBtn">Lưu ghi chú</button>
+      </div>
+      <table id="notesTable">
+        <thead>
+          <tr>
+            <th>Ngày giờ</th>
+            <th>Nội dung</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+  </main>
 
-<script>
-const today = new Date(), year = today.getFullYear(), month = today.getMonth();
-const weekSelect = document.getElementById("weekSelect");
-const scheduleTable = document.getElementById("scheduleTable");
-const timeRows = ["07:00","08:30","10:40","13:00","14:30","16:30","17:00","20:00"];
-const dayMap = {"Thứ 2":1,"Thứ 3":2,"Thứ 4":3,"Thứ 5":4,"Thứ 6":5,"Thứ 7":6,"Chủ nhật":7};
+  <script>
+    const today = new Date(), year = today.getFullYear(), month = today.getMonth();
+    const weekSelect = document.getElementById("weekSelect");
+    const scheduleTable = document.getElementById("scheduleTable");
+    const timeRows = ["07:00", "08:30", "10:40", "13:00", "14:30", "16:30", "17:00", "20:00"];
+    const dayMap = { "Thứ 2": 1, "Thứ 3": 2, "Thứ 4": 3, "Thứ 5": 4, "Thứ 6": 5, "Thứ 7": 6, "Chủ nhật": 7 };
 
-// Dữ liệu môn học nổi bật theo năm
-const highlightSubjectsData = {
-  2025:[
-    {name:"Thuật toán & Cấu trúc dữ liệu", note:"Quan trọng, nhiều sinh viên chọn"},
-    {name:"Hệ điều hành", note:"Cốt lõi ngành CNTT"},
-    {name:"Cơ sở dữ liệu", note:"Thiết kế và quản trị DB"},
-    {name:"Mạng máy tính", note:"Ứng dụng thực hành"},
-    {name:"Lập trình web & ứng dụng", note:"Được nhiều sinh viên chọn"}
-  ],
-  2026:[
-    {name:"Trí tuệ nhân tạo", note:"Xu hướng mới, nhiều sinh viên quan tâm"},
-    {name:"Bảo mật mạng", note:"Cốt lõi về an ninh"},
-    {name:"Phát triển ứng dụng di động", note:"Ứng dụng thực hành"}
-  ]
-};
+    // Dữ liệu môn học nổi bật theo năm
+    const highlightSubjectsData = {
+      2025: [
+        { name: "Thuật toán & Cấu trúc dữ liệu", note: "Quan trọng, nhiều sinh viên chọn" },
+        { name: "Hệ điều hành", note: "Cốt lõi ngành CNTT" },
+        { name: "Cơ sở dữ liệu", note: "Thiết kế và quản trị DB" },
+        { name: "Mạng máy tính", note: "Ứng dụng thực hành" },
+        { name: "Lập trình web & ứng dụng", note: "Được nhiều sinh viên chọn" }
+      ],
+      2026: [
+        { name: "Trí tuệ nhân tạo", note: "Xu hướng mới, nhiều sinh viên quan tâm" },
+        { name: "Bảo mật mạng", note: "Cốt lõi về an ninh" },
+        { name: "Phát triển ứng dụng di động", note: "Ứng dụng thực hành" }
+      ]
+    };
 
-// Render lịch tháng
-function renderCalendar(y,m){
-  const monthTitle = document.getElementById("monthTitle");
-  const calendarBody = document.getElementById("calendarBody");
-  monthTitle.textContent=`Tháng ${m+1} - ${y}`;
-  calendarBody.innerHTML="";
-  const first = new Date(y,m,1), last = new Date(y,m+1,0);
-  let row = document.createElement("tr");
-  for(let i=0;i<first.getDay();i++) row.appendChild(document.createElement("td"));
-  for(let d=1;d<=last.getDate();d++){
-    const cell=document.createElement("td"); cell.textContent=d;
-    if(d===today.getDate() && m===today.getMonth()) cell.classList.add("today");
-    row.appendChild(cell);
-    if((first.getDay()+d)%7===0){calendarBody.appendChild(row); row=document.createElement("tr");}
-  }
-  if(row.children.length>0) calendarBody.appendChild(row);
-}
-renderCalendar(year,month);
-
-// Sinh tuần
-function generateWeeks(y){
-  weekSelect.innerHTML="";
-  let date=new Date(y,0,1); while(date.getDay()!==1) date.setDate(date.getDate()+1);
-  let w=1;
-  while(date.getFullYear()===y){
-    const monday=new Date(date);
-    const startDay=String(monday.getDate()).padStart(2,'0');
-    const startMonth=String(monday.getMonth()+1).padStart(2,'0');
-    const option=document.createElement("option");
-    option.value=monday.toISOString().split('T')[0];
-    option.textContent=`Tuần ${w} - ${startDay}/${startMonth}/${y}`;
-    weekSelect.appendChild(option);
-    date.setDate(date.getDate()+7); w++;
-  }
-}
-generateWeeks(year);
-
-// Cập nhật header TKB
-function updateScheduleHeader(startDate){
-  scheduleTable.querySelectorAll("thead th:not(.time-col)").forEach((th,i)=>{
-    const d = new Date(startDate); 
-    d.setDate(d.getDate()+i);
-    const day = String(d.getDate()).padStart(2,'0');
-    const month = String(d.getMonth()+1).padStart(2,'0');
-
-    th.textContent = `${i===6 ? 'Chủ nhật' : 'Thứ ' + (i+2)} (${day}/${month})`;
-});
-
-}
-updateScheduleHeader(weekSelect.value);
-weekSelect.addEventListener("change", e=>updateScheduleHeader(e.target.value));
-
-// Điền select giờ
-const startSelect = document.getElementById("startTime");
-const endSelect = document.getElementById("endTime");
-timeRows.forEach(t=>{
-  const opt1=document.createElement("option"); opt1.value=t; opt1.textContent=t; startSelect.appendChild(opt1);
-  const opt2=document.createElement("option"); opt2.value=t; opt2.textContent=t; endSelect.appendChild(opt2);
-});
-
-// Thêm môn học
-document.getElementById("addBtn").addEventListener("click",()=>{
-  const subject=document.getElementById("subjectInput").value.trim();
-  const day=document.getElementById("daySelect").value;
-  const startTime=startSelect.value, endTime=endSelect.value;
-  const col=dayMap[day];
-  const tbody=scheduleTable.querySelector("tbody");
-  if(!subject){alert("Nhập tên môn!"); return;}
-  const startIndex=timeRows.indexOf(startTime);
-  const endIndex=timeRows.indexOf(endTime);
-  if(startIndex===-1 || endIndex===-1 || endIndex<startIndex){alert("Chọn giờ hợp lệ!"); return;}
-  for(let i=startIndex;i<=endIndex;i++){
-    if(tbody.rows[i].cells[col].innerHTML){alert("Ô đã có môn!"); return;}
-  }
-  for(let i=startIndex;i<=endIndex;i++) tbody.rows[i].cells[col].innerHTML="";
-  const cell=tbody.rows[startIndex].cells[col];
-  cell.rowSpan=endIndex-startIndex+1;
-  cell.textContent=subject;
-  cell.style.background="#cce8ff"; cell.style.fontWeight="bold"; cell.style.verticalAlign="middle"; cell.style.border="2px solid #009fe3";
-  for(let i=startIndex+1;i<=endIndex;i++) tbody.rows[i].cells[col].style.display="none";
-  document.getElementById("subjectInput").value="";
-});
-
-// Xóa tuần
-document.getElementById("delBtn").addEventListener("click",()=>{
-  const tbody=scheduleTable.querySelector("tbody");
-  for(let r=0;r<tbody.rows.length;r++){
-    for(let c=1;c<tbody.rows[r].cells.length;c++){
-      const cell=tbody.rows[r].cells[c]; cell.style.display=""; cell.rowSpan=1; cell.textContent=""; cell.style.background=""; cell.style.border="1px solid #eee";
+    // Render lịch tháng
+    function renderCalendar(y, m) {
+      const monthTitle = document.getElementById("monthTitle");
+      const calendarBody = document.getElementById("calendarBody");
+      monthTitle.textContent = `Tháng ${m + 1} - ${y}`;
+      calendarBody.innerHTML = "";
+      const first = new Date(y, m, 1), last = new Date(y, m + 1, 0);
+      let row = document.createElement("tr");
+      for (let i = 0; i < first.getDay(); i++) row.appendChild(document.createElement("td"));
+      for (let d = 1; d <= last.getDate(); d++) {
+        const cell = document.createElement("td"); cell.textContent = d;
+        if (d === today.getDate() && m === today.getMonth()) cell.classList.add("today");
+        row.appendChild(cell);
+        if ((first.getDay() + d) % 7 === 0) { calendarBody.appendChild(row); row = document.createElement("tr"); }
+      }
+      if (row.children.length > 0) calendarBody.appendChild(row);
     }
-  }
-});
+    renderCalendar(year, month);
 
-// Lưu ghi chú
-function addNoteRow(content){
-  const tbody = document.getElementById("notesTable").querySelector("tbody");
-  const tr = document.createElement("tr");
-  const now = new Date();
-  const dtStr = now.toLocaleDateString() + " " + now.toLocaleTimeString();
-  const tdDate = document.createElement("td"); tdDate.textContent = dtStr;
-  const tdContent = document.createElement("td"); tdContent.textContent = content;
-  const tdAction = document.createElement("td");
-  const editBtn = document.createElement("span"); editBtn.innerHTML="✏️"; editBtn.className="note-action";
-  const delBtn = document.createElement("span"); delBtn.innerHTML="🗑️"; delBtn.className="note-action";
+    // Sinh tuần
+    function generateWeeks(y) {
+      weekSelect.innerHTML = "";
+      let date = new Date(y, 0, 1); while (date.getDay() !== 1) date.setDate(date.getDate() + 1);
+      let w = 1;
+      while (date.getFullYear() === y) {
+        const monday = new Date(date);
+        const startDay = String(monday.getDate()).padStart(2, '0');
+        const startMonth = String(monday.getMonth() + 1).padStart(2, '0');
+        const option = document.createElement("option");
+        option.value = monday.toISOString().split('T')[0];
+        option.textContent = `Tuần ${w} - ${startDay}/${startMonth}/${y}`;
+        weekSelect.appendChild(option);
+        date.setDate(date.getDate() + 7); w++;
+      }
+    }
+    generateWeeks(year);
 
-  editBtn.addEventListener("click",()=>{document.getElementById("noteInput").value=tdContent.textContent; tbody.removeChild(tr);});
-  delBtn.addEventListener("click",()=>{tbody.removeChild(tr);});
-  
-  tdAction.appendChild(editBtn); tdAction.appendChild(delBtn);
-  tr.appendChild(tdDate); tr.appendChild(tdContent); tr.appendChild(tdAction);
-  tbody.appendChild(tr);
-}
+    // Cập nhật header TKB
+    function updateScheduleHeader(startDate) {
+      scheduleTable.querySelectorAll("thead th:not(.time-col)").forEach((th, i) => {
+        const d = new Date(startDate);
+        d.setDate(d.getDate() + i);
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
 
-document.getElementById("saveNoteBtn").addEventListener("click",()=>{
-  const noteText = document.getElementById("noteInput").value.trim();
-  if(!noteText){alert("Nhập nội dung ghi chú!"); return;}
-  addNoteRow(noteText);
-  document.getElementById("noteInput").value="";
-});
+        th.textContent = `${i === 6 ? 'Chủ nhật' : 'Thứ ' + (i + 2)} (${day}/${month})`;
+      });
 
-// Tạo select năm cho môn học nổi bật
-const yearSelect = document.getElementById("yearSelect");
-Object.keys(highlightSubjectsData).forEach(y=>{
-  const opt = document.createElement("option");
-  opt.value=y; opt.textContent=y;
-  if(y==year) opt.selected=true;
-  yearSelect.appendChild(opt);
-});
+    }
+    updateScheduleHeader(weekSelect.value);
+    weekSelect.addEventListener("change", e => updateScheduleHeader(e.target.value));
 
-function renderHighlightSubjects(selectedYear){
-  const tbody = document.querySelector("#highlightSubjects tbody");
-  tbody.innerHTML="";
-  const subjects = highlightSubjectsData[selectedYear] || [];
-  subjects.forEach(sub=>{
-    const tr = document.createElement("tr");
-    const tdName = document.createElement("td"); tdName.textContent=sub.name;
-    const tdNote = document.createElement("td"); tdNote.textContent=sub.note;
-    tr.appendChild(tdName); tr.appendChild(tdNote);
-    tbody.appendChild(tr);
-  });
-}
-renderHighlightSubjects(yearSelect.value);
-yearSelect.addEventListener("change", e=>renderHighlightSubjects(e.target.value));
+    // Điền select giờ
+    const startSelect = document.getElementById("startTime");
+    const endSelect = document.getElementById("endTime");
+    timeRows.forEach(t => {
+      const opt1 = document.createElement("option"); opt1.value = t; opt1.textContent = t; startSelect.appendChild(opt1);
+      const opt2 = document.createElement("option"); opt2.value = t; opt2.textContent = t; endSelect.appendChild(opt2);
+    });
+
+    // Thêm môn học
+    document.getElementById("addBtn").addEventListener("click", () => {
+      const subject = document.getElementById("subjectInput").value.trim();
+      const day = document.getElementById("daySelect").value;
+      const startTime = startSelect.value, endTime = endSelect.value;
+      const col = dayMap[day];
+      const tbody = scheduleTable.querySelector("tbody");
+      if (!subject) { alert("Nhập tên môn!"); return; }
+      const startIndex = timeRows.indexOf(startTime);
+      const endIndex = timeRows.indexOf(endTime);
+      if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) { alert("Chọn giờ hợp lệ!"); return; }
+      for (let i = startIndex; i <= endIndex; i++) {
+        if (tbody.rows[i].cells[col].innerHTML) { alert("Ô đã có môn!"); return; }
+      }
+      for (let i = startIndex; i <= endIndex; i++) tbody.rows[i].cells[col].innerHTML = "";
+      const cell = tbody.rows[startIndex].cells[col];
+      cell.rowSpan = endIndex - startIndex + 1;
+      cell.textContent = subject;
+      cell.style.background = "#cce8ff"; cell.style.fontWeight = "bold"; cell.style.verticalAlign = "middle"; cell.style.border = "2px solid #009fe3";
+      for (let i = startIndex + 1; i <= endIndex; i++) tbody.rows[i].cells[col].style.display = "none";
+      document.getElementById("subjectInput").value = "";
+    });
+
+    // Xóa tuần
+    document.getElementById("delBtn").addEventListener("click", () => {
+      const tbody = scheduleTable.querySelector("tbody");
+      for (let r = 0; r < tbody.rows.length; r++) {
+        for (let c = 1; c < tbody.rows[r].cells.length; c++) {
+          const cell = tbody.rows[r].cells[c]; cell.style.display = ""; cell.rowSpan = 1; cell.textContent = ""; cell.style.background = ""; cell.style.border = "1px solid #eee";
+        }
+      }
+    });
+
+    // Lưu ghi chú
+    function addNoteRow(content) {
+      const tbody = document.getElementById("notesTable").querySelector("tbody");
+      const tr = document.createElement("tr");
+      const now = new Date();
+      const dtStr = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+      const tdDate = document.createElement("td"); tdDate.textContent = dtStr;
+      const tdContent = document.createElement("td"); tdContent.textContent = content;
+      const tdAction = document.createElement("td");
+      const editBtn = document.createElement("span"); editBtn.innerHTML = "✏️"; editBtn.className = "note-action";
+      const delBtn = document.createElement("span"); delBtn.innerHTML = "🗑️"; delBtn.className = "note-action";
+
+      editBtn.addEventListener("click", () => { document.getElementById("noteInput").value = tdContent.textContent; tbody.removeChild(tr); });
+      delBtn.addEventListener("click", () => { tbody.removeChild(tr); });
+
+      tdAction.appendChild(editBtn); tdAction.appendChild(delBtn);
+      tr.appendChild(tdDate); tr.appendChild(tdContent); tr.appendChild(tdAction);
+      tbody.appendChild(tr);
+    }
+
+    document.getElementById("saveNoteBtn").addEventListener("click", () => {
+      const noteText = document.getElementById("noteInput").value.trim();
+      if (!noteText) { alert("Nhập nội dung ghi chú!"); return; }
+      addNoteRow(noteText);
+      document.getElementById("noteInput").value = "";
+    });
+
+    // Tạo select năm cho môn học nổi bật
+    const yearSelect = document.getElementById("yearSelect");
+    Object.keys(highlightSubjectsData).forEach(y => {
+      const opt = document.createElement("option");
+      opt.value = y; opt.textContent = y;
+      if (y == year) opt.selected = true;
+      yearSelect.appendChild(opt);
+    });
+
+    function renderHighlightSubjects(selectedYear) {
+      const tbody = document.querySelector("#highlightSubjects tbody");
+      tbody.innerHTML = "";
+      const subjects = highlightSubjectsData[selectedYear] || [];
+      subjects.forEach(sub => {
+        const tr = document.createElement("tr");
+        const tdName = document.createElement("td"); tdName.textContent = sub.name;
+        const tdNote = document.createElement("td"); tdNote.textContent = sub.note;
+        tr.appendChild(tdName); tr.appendChild(tdNote);
+        tbody.appendChild(tr);
+      });
+    }
+    renderHighlightSubjects(yearSelect.value);
+    yearSelect.addEventListener("change", e => renderHighlightSubjects(e.target.value));
 
 
 
 
-// ----- Toggle menu trên điện thoại -----
-const menuToggle = document.getElementById("menuToggle");
-const mainNav = document.getElementById("mainNav");
+    // ----- Toggle menu trên điện thoại -----
+    const menuToggle = document.getElementById("menuToggle");
+    const mainNav = document.getElementById("mainNav");
 
-menuToggle.addEventListener("click", () => {
-  mainNav.classList.toggle("active");
-  menuToggle.textContent = mainNav.classList.contains("active") ? "✖" : "☰";
-});
+    menuToggle.addEventListener("click", () => {
+      mainNav.classList.toggle("active");
+      menuToggle.textContent = mainNav.classList.contains("active") ? "✖" : "☰";
+    });
 
-</script>
+  </script>
 </body>
-</html>  
+
+</html>

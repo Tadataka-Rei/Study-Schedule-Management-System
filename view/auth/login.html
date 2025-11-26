@@ -30,7 +30,7 @@
       </form>
 
       <p class="alt-link">Chưa có tài khoản? <a href="register.html">Đăng ký ngay</a></p>
-      <p class="alt-link"><a href="index.html">Bỏ qua đăng nhập →</a></p>
+      <p class="alt-link"><a href="../../public/index.html">Bỏ qua đăng nhập →</a></p>
     </div>
   </div>
 
@@ -80,17 +80,15 @@
           messageDisplay.style.color = 'green';
 
           // --- Crucial Authentication Step ---
-          // You should save the user's role and/or a token here.
-          // For now, we'll save the username to show who's logged in.
           localStorage.setItem("currentUser", username);
           localStorage.setItem("userRole", result.role);
 
           // Redirect the user
-          window.location.href = "index.php";
+
+          window.location.href = "../../public/index.html";
 
         } else {
           // FAILURE (e.g., HTTP 401 Unauthorized)
-          // The API sends the error message in the 'message' field
           messageDisplay.textContent = result.message || 'Lỗi đăng nhập không xác định!';
           messageDisplay.style.color = 'red';
         }

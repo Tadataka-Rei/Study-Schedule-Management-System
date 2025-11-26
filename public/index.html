@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thời khóa biểu tuần</title>
+    <link rel="stylesheet" href="./css/index.css">
+</head>
+
+<body>
+    <header>
+        <div class="logo-left">
+            <span class="logo-text" id="logoText">SSMS</span>
+        </div>
+
+        <div class="menu-toggle" id="menuToggle">☰</div>
+
+        <nav id="mainNav">
+            <a href="index.html">Trang chủ</a>
+            <a href="QLLHT.html">Quản lý môn học</a>
+            <a href="#">Tra cứu môn học</a>
+        </nav>
+
+        <a href="../view/auth/login.html" class="logo-link" id="userLink" style="margin-left:auto;">
+            <img src="logo.svg" alt="User" id="userAvatar"
+                style="width:46px;height:46px;border-radius:50%;border:2px solid #fff">
+        </a>
+    </header>
+
+    <main>
+        <aside class="month-calendar">
+            <h3 id="monthTitle">Tháng</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>CN</th>
+                        <th>T2</th>
+                        <th>T3</th>
+                        <th>T4</th>
+                        <th>T5</th>
+                        <th>T6</th>
+                        <th>T7</th>
+                    </tr>
+                </thead>
+                <tbody id="calendarBody"></tbody>
+            </table>
+
+            <label for="yearSelect">Chọn năm:</label>
+            <select id="yearSelect"></select>
+
+            <h3>Môn học nổi bật</h3>
+            <table id="highlightSubjects">
+                <thead>
+                    <tr>
+                        <th>Môn học</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </aside>
+
+        <div class="content">
+            <h2>Thời khóa biểu tuần</h2>
+            <div class="controls">
+                <label>Chọn tuần:</label>
+                <select id="weekSelect"></select>
+
+                <input type="text" placeholder="Tên môn" id="subjectInput">
+                <select id="daySelect">
+                    <option>Thứ 2</option>
+                    <option>Thứ 3</option>
+                    <option>Thứ 4</option>
+                    <option>Thứ 5</option>
+                    <option>Thứ 6</option>
+                    <option>Thứ 7</option>
+                    <option>Chủ nhật</option>
+                </select>
+
+                <label>Giờ bắt đầu:</label>
+                <select id="startTime"></select>
+                <label>Giờ kết thúc:</label>
+                <select id="endTime"></select>
+
+                <button id="addBtn">Thêm vào lịch</button>
+                <button id="delBtn">Xóa tuần hiện tại</button>
+            </div>
+
+            <div class="schedule">
+                <table id="scheduleTable">
+                    <thead>
+                        <tr>
+                            <th class="time-col">Giờ</th>
+                            <th>Thứ 2</th>
+                            <th>Thứ 3</th>
+                            <th>Thứ 4</th>
+                            <th>Thứ 5</th>
+                            <th>Thứ 6</th>
+                            <th>Thứ 7</th>
+                            <th>CN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="time-col">07:00</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="time-col">08:30</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="time-col">10:40</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="time-col">13:00</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="time-col">14:30</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="time-col">16:30</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="time-col">17:00</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="time-col">20:00</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Ghi chú chi tiết</h3>
+            <div id="noteControls">
+                <textarea id="noteInput" placeholder="Nhập ghi chú..."></textarea>
+                <button id="saveNoteBtn">Lưu ghi chú</button>
+            </div>
+            <p id="noteMessage" style="color: green; margin-top: 5px;"></p>
+            <table id="notesTable">
+                <thead>
+                    <tr>
+                        <th>Ngày giờ</th>
+                        <th>Nội dung</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        // --- 1. CONFIGURATION ---
+        // IMPORTANT: Make sure this path points to your API endpoint for saving notes
+        const NOTES_API_URL = '../../app/Core/API/notes/save.php';
+        const LOGIN_PAGE_URL = '../view/auth/login.html'; // Path to your login page
+
+        // --- 2. AUTHENTICATION CHECK & UI UPDATE ---
+
+        const userLink = document.getElementById('userLink');
+        const logoText = document.getElementById('logoText');
+        const userAvatar = document.getElementById('userAvatar');
+
+        function checkAuthentication() {
+            // Retrieve the token from sessionStorage (clears when tab closes)
+            const token = sessionStorage.getItem("authToken");
+            const username = localStorage.getItem("currentUser");
+            const role = localStorage.getItem("userRole");
+
+            if (token && username) {
+                // User is logged in
+                console.log(`Authenticated as ${username} (${role}).`);
+
+                // Update UI to show logged-in state
+                logoText.textContent = username; // Display username in the header
+                userLink.href = 'profile.php'; // Change link to profile page
+                // Optional: Change avatar source if a path is stored
+                // userAvatar.src = localStorage.getItem("profile_pic_path") || 'logo.svg'; 
+
+            } else {
+                // User is NOT logged in
+                console.log("No valid authentication token found. Redirecting to login.");
+
+                // Ensure link points to login and logo shows general text
+                logoText.textContent = 'SSMS';
+                userLink.href = LOGIN_PAGE_URL;
+            }
+        }
+
+        // Execute the check immediately when the page loads
+        checkAuthentication();
+
+        // --- 3. AUTHENTICATED API CALL EXAMPLE (Save Note) ---
+
+        document.getElementById("saveNoteBtn").addEventListener("click", saveNoteAuthenticated);
+
+        async function saveNoteAuthenticated() {
+            const noteText = document.getElementById("noteInput").value.trim();
+            const messageDisplay = document.getElementById('noteMessage');
+            messageDisplay.textContent = ''; // Clear previous messages
+
+            if (!noteText) { alert("Nhập nội dung ghi chú!"); return; }
+
+            const token = sessionStorage.getItem("authToken");
+            if (!token) {
+                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+                // Redirect immediately to clear UI confusion
+                window.location.href = LOGIN_PAGE_URL;
+                return;
+            }
+
+            const noteData = {
+                content: noteText,
+                week: weekSelect.value // Send current week context
+            };
+
+            messageDisplay.textContent = 'Đang lưu...';
+            messageDisplay.style.color = 'gray';
+
+            try {
+                const response = await fetch(NOTES_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // CRITICAL: Send the token in the Authorization header
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(noteData)
+                });
+
+                // Check for Unauthorized status (401) sent by your PHP API
+                if (response.status === 401 || response.status === 403) {
+                    alert("Không được phép truy cập. Phiên đã hết hạn. Vui lòng đăng nhập lại.");
+                    sessionStorage.removeItem("authToken"); // Clear bad token
+                    window.location.href = LOGIN_PAGE_URL;
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Assuming the API returns success status 200/201
+                    messageDisplay.textContent = `Ghi chú đã được lưu!`;
+                    messageDisplay.style.color = 'green';
+
+                    // Keep the existing frontend logic for adding the row locally
+                    addNoteRow(noteText);
+                    document.getElementById("noteInput").value = "";
+
+                } else {
+                    // Handle API error messages (e.g., database error)
+                    messageDisplay.textContent = `Lỗi: ${result.message || 'Lỗi không xác định từ máy chủ.'}`;
+                    messageDisplay.style.color = 'red';
+                }
+
+            } catch (error) {
+                console.error('Lỗi mạng:', error);
+                messageDisplay.textContent = 'Không thể kết nối đến máy chủ.';
+                messageDisplay.style.color = 'red';
+            }
+        }
+
+
+        // --- 4. EXISTING APPLICATION LOGIC (Untouched, just following the auth code) ---
+
+        const today = new Date(), year = today.getFullYear(), month = today.getMonth();
+        const weekSelect = document.getElementById("weekSelect");
+        const scheduleTable = document.getElementById("scheduleTable");
+        const timeRows = ["07:00", "08:30", "10:40", "13:00", "14:30", "16:30", "17:00", "20:00"];
+        const dayMap = { "Thứ 2": 1, "Thứ 3": 2, "Thứ 4": 3, "Thứ 5": 4, "Thứ 6": 5, "Thứ 7": 6, "Chủ nhật": 7 };
+
+        // Dữ liệu môn học nổi bật theo năm
+        const highlightSubjectsData = {
+            2025: [
+                { name: "Thuật toán & Cấu trúc dữ liệu", note: "Quan trọng, nhiều sinh viên chọn" },
+                { name: "Hệ điều hành", note: "Cốt lõi ngành CNTT" },
+                { name: "Cơ sở dữ liệu", note: "Thiết kế và quản trị DB" },
+                { name: "Mạng máy tính", note: "Ứng dụng thực hành" },
+                { name: "Lập trình web & ứng dụng", note: "Được nhiều sinh viên chọn" }
+            ],
+            2026: [
+                { name: "Trí tuệ nhân tạo", note: "Xu hướng mới, nhiều sinh viên quan tâm" },
+                { name: "Bảo mật mạng", note: "Cốt lõi về an ninh" },
+                { name: "Phát triển ứng dụng di động", note: "Ứng dụng thực hành" }
+            ]
+        };
+
+        // Render lịch tháng
+        function renderCalendar(y, m) {
+            const monthTitle = document.getElementById("monthTitle");
+            const calendarBody = document.getElementById("calendarBody");
+            monthTitle.textContent = `Tháng ${m + 1} - ${y}`;
+            calendarBody.innerHTML = "";
+            const first = new Date(y, m, 1), last = new Date(y, m + 1, 0);
+            let row = document.createElement("tr");
+            for (let i = 0; i < first.getDay(); i++) row.appendChild(document.createElement("td"));
+            for (let d = 1; d <= last.getDate(); d++) {
+                const cell = document.createElement("td"); cell.textContent = d;
+                if (d === today.getDate() && m === today.getMonth()) cell.classList.add("today");
+                row.appendChild(cell);
+                if ((first.getDay() + d) % 7 === 0) { calendarBody.appendChild(row); row = document.createElement("tr"); }
+            }
+            if (row.children.length > 0) calendarBody.appendChild(row);
+        }
+        renderCalendar(year, month);
+
+        // Sinh tuần
+        function generateWeeks(y) {
+            weekSelect.innerHTML = "";
+            let date = new Date(y, 0, 1); while (date.getDay() !== 1) date.setDate(date.getDate() + 1);
+            let w = 1;
+            while (date.getFullYear() === y) {
+                const monday = new Date(date);
+                const startDay = String(monday.getDate()).padStart(2, '0');
+                const startMonth = String(monday.getMonth() + 1).padStart(2, '0');
+                const option = document.createElement("option");
+                option.value = monday.toISOString().split('T')[0];
+                option.textContent = `Tuần ${w} - ${startDay}/${startMonth}/${y}`;
+                weekSelect.appendChild(option);
+                date.setDate(date.getDate() + 7); w++;
+            }
+        }
+        generateWeeks(year);
+
+        // Cập nhật header TKB
+        function updateScheduleHeader(startDate) {
+            scheduleTable.querySelectorAll("thead th:not(.time-col)").forEach((th, i) => {
+                const d = new Date(startDate);
+                d.setDate(d.getDate() + i);
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+
+                th.textContent = `${i === 6 ? 'Chủ nhật' : 'Thứ ' + (i + 2)} (${day}/${month})`;
+            });
+
+        }
+        updateScheduleHeader(weekSelect.value);
+        weekSelect.addEventListener("change", e => updateScheduleHeader(e.target.value));
+
+        // Điền select giờ
+        const startSelect = document.getElementById("startTime");
+        const endSelect = document.getElementById("endTime");
+        timeRows.forEach(t => {
+            const opt1 = document.createElement("option"); opt1.value = t; opt1.textContent = t; startSelect.appendChild(opt1);
+            const opt2 = document.createElement("option"); opt2.value = t; opt2.textContent = t; endSelect.appendChild(opt2);
+        });
+
+        // Thêm môn học
+        document.getElementById("addBtn").addEventListener("click", () => {
+            const subject = document.getElementById("subjectInput").value.trim();
+            const day = document.getElementById("daySelect").value;
+            const startTime = startSelect.value, endTime = endSelect.value;
+            const col = dayMap[day];
+            const tbody = scheduleTable.querySelector("tbody");
+            if (!subject) { alert("Nhập tên môn!"); return; }
+            const startIndex = timeRows.indexOf(startTime);
+            const endIndex = timeRows.indexOf(endTime);
+            if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) { alert("Chọn giờ hợp lệ!"); return; }
+            for (let i = startIndex; i <= endIndex; i++) {
+                if (tbody.rows[i].cells[col].innerHTML) { alert("Ô đã có môn!"); return; }
+            }
+            for (let i = startIndex; i <= endIndex; i++) tbody.rows[i].cells[col].innerHTML = "";
+            const cell = tbody.rows[startIndex].cells[col];
+            cell.rowSpan = endIndex - startIndex + 1;
+            cell.textContent = subject;
+            cell.style.background = "#cce8ff"; cell.style.fontWeight = "bold"; cell.style.verticalAlign = "middle"; cell.style.border = "2px solid #009fe3";
+            for (let i = startIndex + 1; i <= endIndex; i++) tbody.rows[i].cells[col].style.display = "none";
+            document.getElementById("subjectInput").value = "";
+        });
+
+        // Xóa tuần
+        document.getElementById("delBtn").addEventListener("click", () => {
+            const tbody = scheduleTable.querySelector("tbody");
+            for (let r = 0; r < tbody.rows.length; r++) {
+                for (let c = 1; c < tbody.rows[r].cells.length; c++) {
+                    const cell = tbody.rows[r].cells[c]; cell.style.display = ""; cell.rowSpan = 1; cell.textContent = ""; cell.style.background = ""; cell.style.border = "1px solid #eee";
+                }
+            }
+        });
+
+        // Lưu ghi chú (Old local function - now combined with saveNoteAuthenticated)
+        function addNoteRow(content) {
+            const tbody = document.getElementById("notesTable").querySelector("tbody");
+            const tr = document.createElement("tr");
+            const now = new Date();
+            const dtStr = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+            const tdDate = document.createElement("td"); tdDate.textContent = dtStr;
+            const tdContent = document.createElement("td"); tdContent.textContent = content;
+            const tdAction = document.createElement("td");
+            const editBtn = document.createElement("span"); editBtn.innerHTML = "✏️"; editBtn.className = "note-action";
+            const delBtn = document.createElement("span"); delBtn.innerHTML = "🗑️"; delBtn.className = "note-action";
+
+            editBtn.addEventListener("click", () => { document.getElementById("noteInput").value = tdContent.textContent; tbody.removeChild(tr); });
+            delBtn.addEventListener("click", () => { tbody.removeChild(tr); });
+
+            tdAction.appendChild(editBtn); tdAction.appendChild(delBtn);
+            tr.appendChild(tdDate); tr.appendChild(tdContent); tr.appendChild(tdAction);
+            tbody.prepend(tr); // Prepend so new notes appear at the top
+        }
+
+        // Tạo select năm cho môn học nổi bật
+        const yearSelect = document.getElementById("yearSelect");
+        Object.keys(highlightSubjectsData).forEach(y => {
+            const opt = document.createElement("option");
+            opt.value = y; opt.textContent = y;
+            if (y == year) opt.selected = true;
+            yearSelect.appendChild(opt);
+        });
+
+        function renderHighlightSubjects(selectedYear) {
+            const tbody = document.querySelector("#highlightSubjects tbody");
+            tbody.innerHTML = "";
+            const subjects = highlightSubjectsData[selectedYear] || [];
+            subjects.forEach(sub => {
+                const tr = document.createElement("tr");
+                const tdName = document.createElement("td"); tdName.textContent = sub.name;
+                const tdNote = document.createElement("td"); tdNote.textContent = sub.note;
+                tr.appendChild(tdName); tr.appendChild(tdNote);
+                tbody.appendChild(tr);
+            });
+        }
+        renderHighlightSubjects(yearSelect.value);
+        yearSelect.addEventListener("change", e => renderHighlightSubjects(e.target.value));
+
+        // ----- Toggle menu trên điện thoại -----
+        const menuToggle = document.getElementById("menuToggle");
+        const mainNav = document.getElementById("mainNav");
+
+        menuToggle.addEventListener("click", () => {
+            mainNav.classList.toggle("active");
+            menuToggle.textContent = mainNav.classList.contains("active") ? "✖" : "☰";
+        });
+
+    </script>
+</body>
+
+</html>
