@@ -94,18 +94,18 @@ try {
         }
         // --- Kết thúc xử lý tải lên ---
 
-        // Kiểm tra các trường bắt buộc
+        // 俺を殺せくれ！！
         if (empty($teacherId) || empty($courseName) || !is_numeric($teacherId)) {
             $message = 'Giáo viên, Tên khóa học là các trường bắt buộc và phải hợp lệ.';
             $messageType = 'error';
-        } elseif ($messageType != 'error') { // Chỉ tiếp tục nếu không có lỗi từ upload file
+        } elseif ($messageType != 'error') { //眠い
             
             $insertSQL = "
                 INSERT INTO Courses (teacher_id, course_name, description, course_content, passkey, is_private, thumbnail_url, starting_date, ending_date)
                 VALUES (:teacher_id, :course_name, :description, :course_content, :passkey, :is_private, :thumbnail_url, :starting_date, :ending_date)
             ";
             $stmt = $pdo->prepare($insertSQL);
-
+            //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
             try {
                 $stmt->execute([
                     ':teacher_id' => $teacherId,
