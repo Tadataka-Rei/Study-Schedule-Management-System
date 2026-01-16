@@ -53,14 +53,19 @@
 
                 const coursesEl = document.getElementById('coursesList');
                 if (data.success && data.enrollments.length > 0) {
+                    // Update the mapping in your HTML script
                     coursesEl.innerHTML = data.enrollments.map(enrollment => `
-                        <div class="course-card">
-                            <h3>${enrollment.courseId.code} - ${enrollment.courseId.name}</h3>
-                            <p><strong>Credits:</strong> ${enrollment.courseId.credits}</p>
-                            <p><strong>Semester:</strong> ${enrollment.semesterId ? enrollment.semesterId.name : 'N/A'}</p>
-                            <p><strong>Status:</strong> <span class="status-approved">Enrolled</span></p>
-                        </div>
-                    `).join('');
+                    <div class="course-card">
+                        <h3>${enrollment.courseId.code} - ${enrollment.courseId.name}</h3>
+                        <p><strong>Credits:</strong> ${enrollment.courseId.credits}</p>
+                        <p><strong>Semester:</strong> ${enrollment.semesterId ? enrollment.semesterId.name : 'N/A'}</p>
+                        <p><strong>Status:</strong> 
+                            <span class="status-${enrollment.status}">
+                                ${enrollment.status.charAt(0).toUpperCase() + enrollment.status.slice(1)}
+                            </span>
+                        </p>
+                    </div>
+                `).join('');
                 } else {
                     coursesEl.innerHTML = '<p>You are not enrolled in any courses yet.</p>';
                 }

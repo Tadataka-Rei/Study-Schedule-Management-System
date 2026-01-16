@@ -1,18 +1,32 @@
-const { Course, User, Registration, Submission, Assessment, TimetableEvent } = require('../models');
+const { Course, User, Registration, Submission, Assessment, TimetableEvent, Room, Semester } = require('../models');
+const path = require('path');
 
 // Get courses taught by the current lecturer
 const getMyCourses = async (req, res) => {
   try {
     const lecturerId = req.session.user.id;
 
-    const courses = await Course.find({ ownerLecturerId: lecturerId })
-      .populate('semesterId', 'name')
-      .sort({ code: 1 });
+    // Check if request is for JSON (API call) or HTML (page load)
+    const isJsonRequest = req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'));
 
-    res.json({ success: true, courses });
+    if (isJsonRequest) {
+      const courses = await Course.find({ ownerLecturerId: lecturerId })
+        .populate('semesterId', 'name')
+        .populate('scheduleTemplate.roomId', 'code building')
+        .sort({ code: 1 });
+
+      res.json({ success: true, courses });
+    } else {
+      // Serve the HTML page
+      res.sendFile(path.join(__dirname, '../views/pages/teacher/courses.html'));
+    }
   } catch (error) {
     console.error('Error fetching courses:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch courses' });
+    if (req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'))) {
+      res.status(500).json({ success: false, error: 'Failed to fetch courses' });
+    } else {
+      res.status(500).send('Error loading courses page');
+    }
   }
 };
 
@@ -147,10 +161,116 @@ const getTimetable = async (req, res) => {
   }
 };
 
+// Update a course owned by the lecturer
+const updateMyCourse = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const { scheduleTemplate, policies } = req.body;
+    const lecturerId = req.session.user.id;
+
+    // Verify the course belongs to this lecturer
+    const course = await Course.findOne({
+      _id: courseId,
+      ownerLecturerId: lecturerId
+    });
+
+    if (!course) {
+      return res.status(404).json({ success: false, error: 'Course not found or access denied' });
+    }
+
+    // Update scheduleTemplate if provided
+    if (scheduleTemplate && Array.isArray(scheduleTemplate)) {
+      course.scheduleTemplate = scheduleTemplate.map(item => ({
+        dayOfWeek: parseInt(item.dayOfWeek),
+        startTime: item.startTime,
+        endTime: item.endTime,
+        roomId: item.roomId
+      }));
+    }
+
+    // Update policies if provided
+    if (policies) {
+      course.policies = {
+        addDropDeadline: policies.addDropDeadline ? new Date(policies.addDropDeadline) : course.policies.addDropDeadline,
+        attendanceWeight: policies.attendanceWeight !== undefined ? parseFloat(policies.attendanceWeight) : course.policies.attendanceWeight,
+        gradingSchema: policies.gradingSchema || course.policies.gradingSchema
+      };
+    }
+
+    await course.save();
+
+    res.json({ success: true, message: 'Course updated successfully' });
+  } catch (error) {
+    console.error('Error updating course:', error);
+    res.status(500).json({ success: false, error: 'Failed to update course' });
+  }
+};
+
+// Get all rooms
+const getRooms = async (req, res) => {
+  try {
+    const rooms = await Room.find().select('_id code building').sort({ code: 1 });
+    res.json({ success: true, rooms });
+  } catch (error) {
+    console.error('Error fetching rooms:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch rooms' });
+  }
+};
+
+// Get all semesters
+const getSemesters = async (req, res) => {
+  try {
+    const semesters = await Semester.find().select('_id name').sort({ name: 1 });
+    res.json({ success: true, semesters });
+  } catch (error) {
+    console.error('Error fetching semesters:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch semesters' });
+  }
+};
+
+// Get course edit page
+const getCourseEditPage = async (req, res) => {
+  try {
+    const { id } = req.query;
+    const lecturerId = req.session.user.id;
+
+    // Verify the course belongs to this lecturer
+    const course = await Course.findOne({
+      _id: id,
+      ownerLecturerId: lecturerId
+    }).populate('semesterId', 'name').populate('scheduleTemplate.roomId', 'code building');
+
+    if (!course) {
+      return res.status(404).json({ success: false, error: 'Course not found or access denied' });
+    }
+
+    // Check if request is for JSON (API call) or HTML (page load)
+    const isJsonRequest = req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'));
+
+    if (isJsonRequest) {
+      res.json({ success: true, course });
+    } else {
+      // Serve the HTML page
+      res.sendFile(path.join(__dirname, '../views/pages/teacher/courses/edit.html'));
+    }
+  } catch (error) {
+    console.error('Error fetching course edit page:', error);
+    if (req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'))) {
+      res.status(500).json({ success: false, error: 'Failed to fetch course' });
+    } else {
+      res.status(500).send('Error loading course edit page');
+    }
+  }
+};
+
 module.exports = {
   getMyCourses,
   getCourseStudents,
   getCourseAssessments,
   gradeSubmission,
-  getTimetable
+  updateMyCourse,
+  getRooms,
+  getSemesters,
+  getTimetable,
+  getCourseEditPage
 };

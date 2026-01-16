@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Course - SSMS</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <style>
+        .schedule-item {
+            margin-bottom: 10px;
+        }
+
+        .policies-section {
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .schedule-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .schedule-item .form-group {
+            display: inline-block;
+            width: calc(25% - 10px);
+            margin-right: 10px;
+        }
+
+        .schedule-item .form-group:last-child {
+            margin-right: 0;
+        }
+
+        .remove-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .add-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .submit-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>Edit Course</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="userName"></span></span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="/teacher/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/teacher/courses" class="nav-link">My Courses</a></li>
+                <li><a href="/teacher/schedule" class="nav-link">My Schedule</a></li>
+                <li><a href="/teacher/assessments" class="nav-link">Assessments</a></li>
+                <li><a href="/teacher/grades" class="nav-link">Grades</a></li>
+                <li><a href="/teacher/attendance" class="nav-link">Attendance</a></li>
+            </ul>
+        </nav>
+
+        <main class="dashboard-content">
+            <section class="edit-course-section">
+                <h2>Edit Course</h2>
+                <form id="editForm">
+                    <input type="hidden" id="courseId">
+
+                    <div class="form-group">
+                        <label>Code:</label>
+                        <input type="text" id="editCode" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Name:</label>
+                        <input type="text" id="editName" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Credits:</label>
+                        <input type="number" id="editCredits" readonly>
+                    </div>
+
+                    <h3>Schedule Template</h3>
+                    <div id="scheduleList"></div>
+                    <button type="button" class="add-btn" onclick="addScheduleItem()">Add Schedule Item</button>
+
+                    <h3>Policies</h3>
+                    <div class="policies-section">
+                        <div class="form-group">
+                            <label>Add/Drop Deadline:</label>
+                            <input type="datetime-local" id="editAddDropDeadline">
+                        </div>
+                        <div class="form-group">
+                            <label>Attendance Weight (%):</label>
+                            <input type="number" id="editAttendanceWeight" min="0" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label>Grading Schema (JSON):</label>
+                            <textarea id="editGradingSchema" rows="4"></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Save Changes</button>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+    <script>
+        let course = {};
+        let rooms = [];
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadUserInfo();
+            loadCourse();
+            loadRooms();
+        });
+
+        async function loadCourse() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const courseId = urlParams.get('id');
+
+            try {
+                const response = await fetch(`/teacher/courses/edit?id=${courseId}`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    course = data.course;
+                    populateForm();
+                } else {
+                    alert('Error loading course: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error loading course:', error);
+                alert('Error loading course');
+            }
+        }
+
+        async function loadRooms() {
+            try {
+                const response = await fetch('/teacher/rooms');
+                const data = await response.json();
+                if (data.success) {
+                    rooms = data.rooms;
+                }
+            } catch (error) {
+                console.error('Error loading rooms:', error);
+            }
+        }
+
+        function populateForm() {
+            document.getElementById('courseId').value = course._id;
+            document.getElementById('editCode').value = course.code;
+            document.getElementById('editName').value = course.name;
+            document.getElementById('editCredits').value = course.credits;
+
+            // Schedule
+            const scheduleList = document.getElementById('scheduleList');
+            scheduleList.innerHTML = course.scheduleTemplate.map((item, index) => `
+                <div class="schedule-item" data-index="${index}">
+                    <div class="form-group">
+                        <label>Day:</label>
+                        <select class="dayOfWeek">
+                            <option value="1" ${item.dayOfWeek === 1 ? 'selected' : ''}>Monday</option>
+                            <option value="2" ${item.dayOfWeek === 2 ? 'selected' : ''}>Tuesday</option>
+                            <option value="3" ${item.dayOfWeek === 3 ? 'selected' : ''}>Wednesday</option>
+                            <option value="4" ${item.dayOfWeek === 4 ? 'selected' : ''}>Thursday</option>
+                            <option value="5" ${item.dayOfWeek === 5 ? 'selected' : ''}>Friday</option>
+                            <option value="6" ${item.dayOfWeek === 6 ? 'selected' : ''}>Saturday</option>
+                            <option value="7" ${item.dayOfWeek === 7 ? 'selected' : ''}>Sunday</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Start Time:</label>
+                        <input type="time" class="startTime" value="${item.startTime}">
+                    </div>
+                    <div class="form-group">
+                        <label>End Time:</label>
+                        <input type="time" class="endTime" value="${item.endTime}">
+                    </div>
+                    <div class="form-group">
+                        <label>Room:</label>
+                        <select class="roomId">
+                            ${rooms.map(room => `<option value="${room._id}" ${item.roomId && item.roomId._id === room._id ? 'selected' : ''}>${room.code} - ${room.building}</option>`).join('')}
+                        </select>
+                    </div>
+                    <button type="button" class="remove-btn" onclick="removeScheduleItem(this)">Remove</button>
+                </div>
+            `).join('');
+
+            // Policies
+            document.getElementById('editAddDropDeadline').value = course.policies.addDropDeadline ? new Date(course.policies.addDropDeadline).toISOString().slice(0, 16) : '';
+            document.getElementById('editAttendanceWeight').value = course.policies.attendanceWeight || '';
+            document.getElementById('editGradingSchema').value = JSON.stringify(course.policies.gradingSchema || {}, null, 2);
+        }
+
+        function addScheduleItem() {
+            const scheduleList = document.getElementById('scheduleList');
+            const index = scheduleList.children.length;
+            const item = document.createElement('div');
+            item.className = 'schedule-item';
+            item.setAttribute('data-index', index);
+            item.innerHTML = `
+                <div class="form-group">
+                    <label>Day:</label>
+                    <select class="dayOfWeek">
+                        <option value="1">Monday</option>
+                        <option value="2">Tuesday</option>
+                        <option value="3">Wednesday</option>
+                        <option value="4">Thursday</option>
+                        <option value="5">Friday</option>
+                        <option value="6">Saturday</option>
+                        <option value="7">Sunday</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Start Time:</label>
+                    <input type="time" class="startTime">
+                </div>
+                <div class="form-group">
+                    <label>End Time:</label>
+                    <input type="time" class="endTime">
+                </div>
+                <div class="form-group">
+                    <label>Room:</label>
+                    <select class="roomId">
+                        ${rooms.map(room => `<option value="${room._id}">${room.code} - ${room.building}</option>`).join('')}
+                    </select>
+                </div>
+                <button type="button" class="remove-btn" onclick="removeScheduleItem(this)">Remove</button>
+            `;
+            scheduleList.appendChild(item);
+        }
+
+        function removeScheduleItem(button) {
+            button.closest('.schedule-item').remove();
+        }
+
+        document.getElementById('editForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const courseId = document.getElementById('courseId').value;
+
+            // Collect schedule
+            const scheduleItems = document.querySelectorAll('.schedule-item');
+            const scheduleTemplate = Array.from(scheduleItems).map(item => {
+                return {
+                    dayOfWeek: parseInt(item.querySelector('.dayOfWeek').value),
+                    startTime: item.querySelector('.startTime').value,
+                    endTime: item.querySelector('.endTime').value,
+                    roomId: item.querySelector('.roomId').value
+                };
+            });
+
+            // Collect policies
+            const policies = {
+                addDropDeadline: document.getElementById('editAddDropDeadline').value,
+                attendanceWeight: parseFloat(document.getElementById('editAttendanceWeight').value) || 0,
+                gradingSchema: JSON.parse(document.getElementById('editGradingSchema').value || '{}')
+            };
+
+            try {
+                const response = await fetch(`/teacher/courses/${courseId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ scheduleTemplate, policies })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('Course updated successfully');
+                    window.location.href = '/teacher/courses';
+                } else {
+                    alert('Error updating course: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error updating course:', error);
+                alert('Error updating course');
+            }
+        });
+    </script>
+</body>
+
+</html>

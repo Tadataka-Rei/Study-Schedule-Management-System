@@ -99,13 +99,15 @@ const enrollInCourse = async (req, res) => {
   }
 };
 // Get student's enrollments
+// studentController.js
 const getMyEnrollments = async (req, res) => {
   try {
     const studentId = req.session.user.id;
 
     const enrollments = await Registration.find({
       studentId,
-      status: 'approved'
+      // Change this to include pending
+      status: { $in: ['approved', 'pending'] } 
     })
     .populate('courseId', 'code name credits')
     .populate('semesterId', 'name')

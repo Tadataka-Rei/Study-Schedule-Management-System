@@ -1,4 +1,4 @@
-const { Course, User, Semester } = require('../models');
+const { Course, User, Semester, Room } = require('../models');
 const path = require('path');
 
 // Show all courses
@@ -63,7 +63,13 @@ const createCourse = async (req, res) => {
         sectionId: section.sectionId,
         lecturerId: section.lecturerId,
         capacity: parseInt(section.capacity),
-        enrolledCount: 0
+        enrolledCount: 0,
+        schedule: section.schedule ? section.schedule.map(sched => ({
+          dayOfWeek: parseInt(sched.dayOfWeek),
+          startTime: sched.startTime,
+          endTime: sched.endTime,
+          roomId: sched.roomId
+        })) : []
       }));
     }
     
@@ -89,27 +95,32 @@ const createCourse = async (req, res) => {
   }
 };
 
-// Get lecturers and semesters for form
+// Get lecturers, semesters, and rooms for form
 const getCourseFormData = async (req, res) => {
   try {
     const lecturers = await User.find({ role: 'lecturer' })
       .select('_id profile.fullName profile.email')
       .sort({ 'profile.fullName': 1 });
-    
+
     const semesters = await Semester.find()
       .select('_id name')
       .sort({ name: 1 });
-    
-    res.json({ 
-      success: true, 
-      lecturers, 
-      semesters 
+
+    const rooms = await Room.find()
+      .select('_id code building capacity')
+      .sort({ code: 1 });
+
+    res.json({
+      success: true,
+      lecturers,
+      semesters,
+      rooms
     });
   } catch (error) {
     console.error('Error fetching course form data:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to fetch form data' 
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch form data'
     });
   }
 };
@@ -190,7 +201,13 @@ const updateCourse = async (req, res) => {
         sectionId: section.sectionId,
         lecturerId: section.lecturerId,
         capacity: parseInt(section.capacity),
-        enrolledCount: section.enrolledCount || 0
+        enrolledCount: section.enrolledCount || 0,
+        schedule: section.schedule ? section.schedule.map(sched => ({
+          dayOfWeek: parseInt(sched.dayOfWeek),
+          startTime: sched.startTime,
+          endTime: sched.endTime,
+          roomId: sched.roomId
+        })) : []
       }));
     }
     

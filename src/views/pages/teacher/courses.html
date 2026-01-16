@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Courses - SSMS</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>My Courses</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="userName"></span></span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="/teacher/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/teacher/courses" class="nav-link active">My Courses</a></li>
+                <li><a href="/teacher/schedule" class="nav-link">My Schedule</a></li>
+                <li><a href="/teacher/assessments" class="nav-link">Assessments</a></li>
+                <li><a href="/teacher/grades" class="nav-link">Grades</a></li>
+                <li><a href="/teacher/attendance" class="nav-link">Attendance</a></li>
+            </ul>
+        </nav>
+
+        <main class="dashboard-content">
+            <section class="courses-section">
+                <h2>My Courses</h2>
+                <div id="coursesList" class="courses-grid">
+                    <p>Loading courses...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+
+
+    <script src="/js/dashboard.js"></script>
+    <script>
+        let courses = [];
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadUserInfo();
+            loadCourses();
+            loadRooms();
+            loadSemesters();
+        });
+
+        async function loadCourses() {
+            try {
+                const response = await fetch('/teacher/courses', {
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await response.json();
+
+                const coursesEl = document.getElementById('coursesList');
+                if (data.success && data.courses.length > 0) {
+                    courses = data.courses;
+                    coursesEl.innerHTML = data.courses.map(course => `
+                        <div class="course-card">
+                            <h3>${course.code} - ${course.name}</h3>
+                            <p><strong>Credits:</strong> ${course.credits}</p>
+                            <p><strong>Semester:</strong> ${course.semesterId ? course.semesterId.name : 'N/A'}</p>
+                            <p><strong>Sections:</strong> ${course.sections.length}</p>
+                            <a href="/teacher/courses/edit?id=${course._id}" class="edit-btn">Edit</a>
+                        </div>
+                    `).join('');
+                } else {
+                    coursesEl.innerHTML = '<p>You have no courses assigned.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading courses:', error);
+                document.getElementById('coursesList').innerHTML = '<p>Unable to load courses.</p>';
+            }
+        }
+
+
+
+
+    </script>
+</body>
+
+</html>

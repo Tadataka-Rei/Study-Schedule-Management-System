@@ -40,6 +40,12 @@ const {
   generateTimetableReport,
   getReportSemesters
 } = require('../controllers/reportController');
+const {
+  showRooms,
+  showCreateRoomForm,
+  showRoomsList,
+  createRoom
+} = require('../controllers/roomController');
 
 const router = express.Router();
 
@@ -77,6 +83,12 @@ router.get('/semesters/:id/edit', showEditSemesterForm);
 router.get('/semesters/:id', getSemester);
 router.put('/semesters/:id', updateSemester);
 router.delete('/semesters/:id', deleteSemester);
+
+// Room Management
+router.get('/rooms', showRoomsList);
+router.get('/rooms/list', showRooms);
+router.get('/rooms/new', showCreateRoomForm);
+router.post('/rooms', createRoom);
 
 // Reports
 router.get('/reports', showReportsDashboard);

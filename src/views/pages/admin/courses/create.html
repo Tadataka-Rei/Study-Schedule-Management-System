@@ -97,6 +97,14 @@
                                             class="btn-remove">Remove</button>
                                     </div>
                                 </div>
+                                <div class="schedule-section">
+                                    <h4>Schedule</h4>
+                                    <div class="schedule-container" data-section-index="0">
+                                        <!-- Schedule items will be added here -->
+                                    </div>
+                                    <button type="button" onclick="addScheduleItem(this)" class="btn-secondary">Add
+                                        Schedule</button>
+                                </div>
                             </div>
                         </div>
 
@@ -117,6 +125,7 @@
     <script>
         let lecturers = [];
         let semesters = [];
+        let rooms = [];
         let sectionCount = 1;
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -132,9 +141,11 @@
                 if (data.success) {
                     lecturers = data.lecturers;
                     semesters = data.semesters;
+                    rooms = data.rooms;
 
                     populateLecturers();
                     populateSemesters();
+                    populateRooms();
                 } else {
                     alert('Failed to load form data');
                 }
@@ -178,6 +189,19 @@
             });
         }
 
+        function populateRooms() {
+            // Populate existing room dropdowns
+            const roomSelects = document.querySelectorAll('select[name*="[roomId]"]');
+            roomSelects.forEach(select => {
+                rooms.forEach(room => {
+                    const option = document.createElement('option');
+                    option.value = room._id;
+                    option.textContent = `${room.code} (${room.building})`;
+                    select.appendChild(option);
+                });
+            });
+        }
+
         function addSection() {
             const container = document.getElementById('sectionsContainer');
             const sectionDiv = document.createElement('div');
@@ -203,6 +227,13 @@
                         <button type="button" onclick="removeSection(this)" class="btn-remove">Remove</button>
                     </div>
                 </div>
+                <div class="schedule-section">
+                    <h4>Schedule</h4>
+                    <div class="schedule-container" data-section-index="${sectionCount}">
+                        <!-- Schedule items will be added here -->
+                    </div>
+                    <button type="button" onclick="addScheduleItem(this)" class="btn-secondary">Add Schedule</button>
+                </div>
             `;
 
             container.appendChild(sectionDiv);
@@ -219,6 +250,66 @@
             sectionCount++;
         }
 
+        function addScheduleItem(button) {
+            const scheduleContainer = button.previousElementSibling;
+            const sectionIndex = scheduleContainer.dataset.sectionIndex;
+            const scheduleCount = scheduleContainer.children.length;
+
+            const scheduleDiv = document.createElement('div');
+            scheduleDiv.className = 'schedule-item';
+            scheduleDiv.innerHTML = `
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Day of Week</label>
+                        <select name="sections[${sectionIndex}][schedule][${scheduleCount}][dayOfWeek]" required>
+                            <option value="">Select Day</option>
+                            <option value="0">Sunday</option>
+                            <option value="1">Monday</option>
+                            <option value="2">Tuesday</option>
+                            <option value="3">Wednesday</option>
+                            <option value="4">Thursday</option>
+                            <option value="5">Friday</option>
+                            <option value="6">Saturday</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Start Time</label>
+                        <input type="time" name="sections[${sectionIndex}][schedule][${scheduleCount}][startTime]" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Time</label>
+                        <input type="time" name="sections[${sectionIndex}][schedule][${scheduleCount}][endTime]" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Room</label>
+                        <select name="sections[${sectionIndex}][schedule][${scheduleCount}][roomId]" required>
+                            <option value="">Select Room</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button type="button" onclick="removeScheduleItem(this)" class="btn-remove">Remove</button>
+                    </div>
+                </div>
+            `;
+
+            scheduleContainer.appendChild(scheduleDiv);
+
+            // Populate room dropdown for new schedule item
+            const newRoomSelect = scheduleDiv.querySelector('select[name*="[roomId]"]');
+            rooms.forEach(room => {
+                const option = document.createElement('option');
+                option.value = room._id;
+                option.textContent = `${room.code} (${room.building})`;
+                newRoomSelect.appendChild(option);
+            });
+        }
+
+        function removeScheduleItem(button) {
+            const scheduleItem = button.closest('.schedule-item');
+            scheduleItem.remove();
+        }
+
         function removeSection(button) {
             const sectionItem = button.closest('.section-item');
             sectionItem.remove();
@@ -230,7 +321,7 @@
             const formData = new FormData(this);
             const data = Object.fromEntries(formData.entries());
 
-            // Convert sections array
+            // Convert sections array with schedules
             const sections = [];
             const sectionKeys = Object.keys(data).filter(key => key.startsWith('sections['));
 
@@ -241,9 +332,24 @@
                     const field = match[2];
 
                     if (!sections[index]) {
-                        sections[index] = {};
+                        sections[index] = { schedule: [] };
                     }
-                    sections[index][field] = data[key];
+
+                    // Handle schedule fields
+                    if (field.startsWith('schedule[')) {
+                        const scheduleMatch = field.match(/schedule\[(\d+)\]\[(.+)\]/);
+                        if (scheduleMatch) {
+                            const scheduleIndex = parseInt(scheduleMatch[1]);
+                            const scheduleField = scheduleMatch[2];
+
+                            if (!sections[index].schedule[scheduleIndex]) {
+                                sections[index].schedule[scheduleIndex] = {};
+                            }
+                            sections[index].schedule[scheduleIndex][scheduleField] = data[key];
+                        }
+                    } else {
+                        sections[index][field] = data[key];
+                    }
                 }
             });
 

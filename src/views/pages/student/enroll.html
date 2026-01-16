@@ -98,11 +98,13 @@
         }
 
         async function enrollInCourse(courseId, sectionId) {
+            if (!confirm('Are you sure you want to enroll in this section?')) return;
+
             try {
                 const response = await fetch('/student/enroll', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ courseId, sectionId })
                 });
@@ -110,14 +112,14 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    alert('Enrollment request submitted successfully!');
+                    alert(data.message || 'Enrollment request submitted successfully');
                     loadAvailableCourses(); // Refresh the list
                 } else {
-                    alert('Enrollment failed: ' + data.error);
+                    alert(data.error || 'Failed to enroll');
                 }
             } catch (error) {
                 console.error('Error enrolling:', error);
-                alert('Unable to submit enrollment request.');
+                alert('An error occurred during enrollment');
             }
         }
     </script>

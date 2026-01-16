@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Management - SSMS</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>Room Management</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="userName"></span></span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="/admin/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/admin/users" class="nav-link">User Management</a></li>
+                <li><a href="/admin/courses" class="nav-link">Course Management</a></li>
+                <li><a href="/admin/semesters" class="nav-link">Semester Management</a></li>
+                <li><a href="/admin/rooms" class="nav-link active">Room Management</a></li>
+                <li><a href="/admin/reports" class="nav-link">Reports</a></li>
+            </ul>
+        </nav>
+
+        <main class="dashboard-content">
+            <section class="content-header">
+                <div class="header-actions">
+                    <h2>All Rooms</h2>
+                    <button onclick="window.location.href='/admin/rooms/new'" class="action-btn">
+                        Add New Room
+                    </button>
+                </div>
+
+                <div class="filters">
+                    <input type="text" id="searchInput" placeholder="Search rooms..." onkeyup="searchRooms()">
+                </div>
+            </section>
+
+            <section class="rooms-table">
+                <div id="loadingMessage" class="loading">Loading rooms...</div>
+                <table id="roomsTable" class="data-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Building</th>
+                            <th>Capacity</th>
+                            <th>Features</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="roomsTableBody">
+                        <!-- Rooms will be loaded here -->
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+    <script>
+        let allRooms = [];
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadUserInfo();
+            loadRooms();
+        });
+
+        async function loadRooms() {
+            try {
+                const response = await fetch('/admin/rooms/list');
+                const data = await response.json();
+
+                if (data.success) {
+                    allRooms = data.rooms;
+                    displayRooms(allRooms);
+                    document.getElementById('loadingMessage').style.display = 'none';
+                    document.getElementById('roomsTable').style.display = 'table';
+                } else {
+                    showError('Failed to load rooms');
+                }
+            } catch (error) {
+                console.error('Error loading rooms:', error);
+                showError('Error loading rooms');
+            }
+        }
+
+        function displayRooms(rooms) {
+            const tbody = document.getElementById('roomsTableBody');
+            tbody.innerHTML = '';
+
+            rooms.forEach(room => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${room.code}</td>
+                    <td>${room.building || '-'}</td>
+                    <td>${room.capacity}</td>
+                    <td>${room.features && room.features.length > 0 ? room.features.join(', ') : '-'}</td>
+                    <td class="actions">
+                        <button onclick="editRoom('${room._id}')" class="btn-edit">Edit</button>
+                        <button onclick="deleteRoom('${room._id}')" class="btn-delete">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function searchRooms() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allRooms.filter(room =>
+                room.code.toLowerCase().includes(searchTerm) ||
+                (room.building && room.building.toLowerCase().includes(searchTerm))
+            );
+            displayRooms(filtered);
+        }
+
+        function editRoom(roomId) {
+            // TODO: Implement edit functionality
+            alert('Edit functionality not yet implemented');
+        }
+
+        async function deleteRoom(roomId) {
+            if (!confirm('Are you sure you want to delete this room?')) {
+                return;
+            }
+
+            // TODO: Implement delete functionality
+            alert('Delete functionality not yet implemented');
+        }
+
+        function showSuccess(message) {
+            alert(message); // You can replace with a better notification system
+        }
+
+        function showError(message) {
+            alert(message); // You can replace with a better notification system
+        }
+    </script>
+
+    <style>
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .data-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-edit,
+        .btn-delete {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-edit {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .filters input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</body>
+
+</html>

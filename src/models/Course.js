@@ -11,12 +11,18 @@ const courseSchema = new Schema({
     sectionId: String,
     lecturerId: { type: Schema.Types.ObjectId, ref: 'User' },
     capacity: Number,
-    enrolledCount: { type: Number, default: 0 }
+    enrolledCount: { type: Number, default: 0 },
+    schedule: [{
+      dayOfWeek: Number,  // 0 for Sunday, 1 for Monday, etc.
+      startTime: String,  // "08:00"
+      endTime: String,    // "14:30"
+      roomId: { type: Schema.Types.ObjectId, ref: 'Room' }
+    }]
   }],
   scheduleTemplate: [{
-    dayOfWeek: Number,  // [1, 3] for Mon & Wed
-    startTime: String,  // ["08:00", "13:00"]
-    endTime: String,    // ["09:30", "14:30"]
+    dayOfWeek: Number,  // 3 for Wed
+    startTime: String,  // "08:00"
+    endTime: String,    // "14:30"
     roomId: { type: Schema.Types.ObjectId, ref: 'Room' }
   }],
   policies: {
