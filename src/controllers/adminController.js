@@ -12,6 +12,20 @@ const showUsers = async (req, res) => {
   }
 };
 
+// Get single user
+const getUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch user' });
+  }
+};
+
 // Show create user form
 const showCreateUserForm = (req, res) => {
   res.sendFile(path.join(__dirname, '../views/pages/admin/users/create.html'));
@@ -196,6 +210,7 @@ const deleteUser = async (req, res) => {
 
 module.exports = {
   showUsers,
+  getUser,
   showCreateUserForm,
   showUsersList,
   createUser,

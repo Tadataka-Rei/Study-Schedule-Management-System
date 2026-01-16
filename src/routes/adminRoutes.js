@@ -3,6 +3,7 @@ const { showAdminDashboard } = require('../controllers/pageController');
 const { getDashboardStats } = require('../controllers/dashboardController');
 const {
   showUsers,
+  getUser,
   showCreateUserForm,
   showUsersList,
   createUser,
@@ -52,7 +53,7 @@ router.get('/users/list', showUsers);
 router.get('/users/new', showCreateUserForm);
 router.post('/users', createUser);
 router.get('/users/:id/edit', showEditUserForm);
-router.get('/users/:id', showUsers);
+router.get('/users/:id', getUser);
 router.put('/users/:id', updateUser);
 router.delete('/users/:id', deleteUser);
 
