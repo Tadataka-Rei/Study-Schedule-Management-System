@@ -32,14 +32,7 @@ const {
   updateSemester,
   deleteSemester
 } = require('../controllers/semesterController');
-const {
-  showReportsDashboard,
-  generateEnrollmentReport,
-  generateCourseReport,
-  generateUserReport,
-  generateTimetableReport,
-  getReportSemesters
-} = require('../controllers/reportController');
+
 const {
   showRooms,
   showCreateRoomForm,
@@ -90,12 +83,5 @@ router.get('/rooms/list', showRooms);
 router.get('/rooms/new', showCreateRoomForm);
 router.post('/rooms', createRoom);
 
-// Reports
-router.get('/reports', showReportsDashboard);
-router.get('/reports/enrollments', generateEnrollmentReport);
-router.get('/reports/courses', generateCourseReport);
-router.get('/reports/users', generateUserReport);
-router.get('/reports/timetable', generateTimetableReport);
-router.get('/reports/semesters', getReportSemesters);
 
 module.exports = router;

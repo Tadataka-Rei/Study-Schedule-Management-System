@@ -9,13 +9,21 @@ const {
   getRooms,
   getSemesters,
   getTimetable,
-  getCourseEditPage
+  getCourseEditPage,
+  getTodaysCourses,
+  getAttendanceForm,
+  submitAttendance,
+  getTakeAttendancePage,
+  getTeacherDashboardStats,
+  getTeacherTodayEvents
 } = require('../controllers/teacherController');
 
 const router = express.Router();
 
 // Dashboard
 router.get('/dashboard', showTeacherDashboard);
+router.get('/dashboard/stats', getTeacherDashboardStats);
+router.get('/today-events', getTeacherTodayEvents);
 
 // Course Management
 router.get('/courses', getMyCourses);
@@ -33,5 +41,11 @@ router.get('/semesters', getSemesters);
 
 // Timetable
 router.get('/timetable', getTimetable);
+
+// Attendance Management
+router.get('/attendance/take', getTakeAttendancePage);
+router.get('/attendance/today', getTodaysCourses);
+router.get('/attendance/:eventId', getAttendanceForm);
+router.post('/attendance/:eventId', submitAttendance);
 
 module.exports = router;

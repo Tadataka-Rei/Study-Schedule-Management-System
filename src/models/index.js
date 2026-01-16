@@ -8,6 +8,7 @@ const Assessment = require('./Assessment');
 const Submission = require('./Submission');
 const Notification = require('./Notification');
 const AuditLog = require('./AuditLog');
+const Attendance = require('./Attendance');
 
 module.exports = {
   User,
@@ -19,5 +20,6 @@ module.exports = {
   Assessment,
   Submission,
   Notification,
-  AuditLog
+  AuditLog,
+  Attendance
 };

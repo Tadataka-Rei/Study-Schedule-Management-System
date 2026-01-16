@@ -17,7 +17,7 @@ async function logout() {
     }
 }
 
-async function loadUserInfo() {
+async function loadUserInfo() {s
     try {
         const response = await fetch('/api/auth/me');
         const data = await response.json();
@@ -83,23 +83,48 @@ async function loadDashboardStats() {
 }
 
 async function loadTeacherStats() {
-    // For now, show 0 since there's no real teacher data yet
-    const stats = {
-        activeCourses: 0,
-        totalStudents: 0,
-        pendingGrades: 0,
-        upcomingClasses: 0
-    };
-    
-    const activeCoursesEl = document.getElementById('activeCourses');
-    const totalStudentsEl = document.getElementById('totalStudents');
-    const pendingGradesEl = document.getElementById('pendingGrades');
-    const upcomingClassesEl = document.getElementById('upcomingClasses');
-    
-    if (activeCoursesEl) activeCoursesEl.textContent = stats.activeCourses;
-    if (totalStudentsEl) totalStudentsEl.textContent = stats.totalStudents;
-    if (pendingGradesEl) pendingGradesEl.textContent = stats.pendingGrades;
-    if (upcomingClassesEl) upcomingClassesEl.textContent = stats.upcomingClasses;
+    try {
+        const response = await fetch('/teacher/dashboard/stats');
+        const data = await response.json();
+
+        if (data.success) {
+            const stats = data.stats;
+
+            const activeCoursesEl = document.getElementById('activeCourses');
+            const totalStudentsEl = document.getElementById('totalStudents');
+            const pendingGradesEl = document.getElementById('pendingGrades');
+            const upcomingClassesEl = document.getElementById('upcomingClasses');
+
+            if (activeCoursesEl) activeCoursesEl.textContent = stats.activeCourses;
+            if (totalStudentsEl) totalStudentsEl.textContent = stats.totalStudents;
+            if (pendingGradesEl) pendingGradesEl.textContent = stats.pendingGrades;
+            if (upcomingClassesEl) upcomingClassesEl.textContent = stats.upcomingClasses;
+        } else {
+            console.error('Failed to load teacher stats:', data.error);
+            // Set to 0 if failed to load
+            const activeCoursesEl = document.getElementById('activeCourses');
+            const totalStudentsEl = document.getElementById('totalStudents');
+            const pendingGradesEl = document.getElementById('pendingGrades');
+            const upcomingClassesEl = document.getElementById('upcomingClasses');
+
+            if (activeCoursesEl) activeCoursesEl.textContent = '0';
+            if (totalStudentsEl) totalStudentsEl.textContent = '0';
+            if (pendingGradesEl) pendingGradesEl.textContent = '0';
+            if (upcomingClassesEl) upcomingClassesEl.textContent = '0';
+        }
+    } catch (error) {
+        console.error('Error loading teacher stats:', error);
+        // Set to 0 if error
+        const activeCoursesEl = document.getElementById('activeCourses');
+        const totalStudentsEl = document.getElementById('totalStudents');
+        const pendingGradesEl = document.getElementById('pendingGrades');
+        const upcomingClassesEl = document.getElementById('upcomingClasses');
+
+        if (activeCoursesEl) activeCoursesEl.textContent = '0';
+        if (totalStudentsEl) totalStudentsEl.textContent = '0';
+        if (pendingGradesEl) pendingGradesEl.textContent = '0';
+        if (upcomingClassesEl) upcomingClassesEl.textContent = '0';
+    }
 }
 
 
@@ -144,7 +169,7 @@ async function loadTodaySchedule() {
     if (!scheduleEl) return;
 
     try {
-        const response = await fetch('/student/today-events');
+        const response = await fetch('/teacher/today-events');
         const data = await response.json();
 
         if (data.success && data.events.length > 0) {
@@ -160,6 +185,7 @@ async function loadTodaySchedule() {
         }
     } catch (error) {
         console.error('Failed to load schedule:', error);
+        scheduleEl.innerHTML = '<p>Loading schedule...</p>';
     }
 }
 

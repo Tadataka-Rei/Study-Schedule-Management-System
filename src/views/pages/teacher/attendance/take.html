@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take Attendance - SSMS</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>Take Attendance</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="userName"></span></span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="/teacher/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/teacher/courses" class="nav-link">My Courses</a></li>
+                <li><a href="/teacher/schedule" class="nav-link">My Schedule</a></li>
+                <li><a href="/teacher/assessments" class="nav-link">Assessments</a></li>
+                <li><a href="/teacher/grades" class="nav-link">Grades</a></li>
+            </ul>
+        </nav>
+
+        <main class="dashboard-content">
+            <section class="attendance-section">
+                <h2>Select a Class to Take Attendance</h2>
+                <div class="attendance-list" id="attendanceList">
+                    <p>Loading today's classes...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../../js/dashboard.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            loadUserInfo();
+            loadTodaysCourses();
+        });
+
+        async function loadTodaysCourses() {
+            try {
+                const response = await fetch('/teacher/attendance/today');
+                const data = await response.json();
+
+                if (data.success) {
+                    displayCourses(data.events);
+                } else {
+                    document.getElementById('attendanceList').innerHTML = '<p>No classes scheduled for today.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading courses:', error);
+                document.getElementById('attendanceList').innerHTML = '<p>Error loading courses.</p>';
+            }
+        }
+
+        function displayCourses(events) {
+            const container = document.getElementById('attendanceList');
+
+            if (events.length === 0) {
+                container.innerHTML = '<p>No classes scheduled for today.</p>';
+                return;
+            }
+
+            const html = events.map(event => `
+                <div class="course-card">
+                    <h3>${event.courseId.code} - ${event.courseId.name}</h3>
+                    <p>Room: ${event.roomId ? `${event.roomId.code} (${event.roomId.building})` : 'TBA'}</p>
+                    <p>Time: ${new Date(event.startAt).toLocaleTimeString()} - ${new Date(event.endAt).toLocaleTimeString()}</p>
+                    <button class="action-btn" onclick="takeAttendance('${event._id}')">Take Attendance</button>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        function takeAttendance(eventId) {
+            window.location.href = `/teacher/attendance/${eventId}`;
+        }
+    </script>
+</body>
+
+</html>
