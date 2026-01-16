@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Course - SSMS</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>Create Course</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="userName"></span></span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+        
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="/admin/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/admin/users" class="nav-link">User Management</a></li>
+                <li><a href="/admin/courses" class="nav-link active">Course Management</a></li>
+                <li><a href="/admin/semesters" class="nav-link">Semester Management</a></li>
+                <li><a href="/admin/reports" class="nav-link">Reports</a></li>
+            </ul>
+        </nav>
+        
+        <main class="dashboard-content">
+            <section class="form-section">
+                <div class="section-header">
+                    <h2>Create New Course</h2>
+                    <button onclick="window.location.href='/admin/courses'" class="btn-cancel">Back to Courses</button>
+                </div>
+                
+                <form id="createCourseForm" class="admin-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="code">Course Code *</label>
+                            <input type="text" id="code" name="code" required placeholder="e.g., CS101">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="name">Course Name *</label>
+                            <input type="text" id="name" name="name" required placeholder="e.g., Introduction to Computer Science">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="credits">Credits *</label>
+                            <input type="number" id="credits" name="credits" required min="1" max="10">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="ownerLecturerId">Course Lecturer *</label>
+                            <select id="ownerLecturerId" name="ownerLecturerId" required>
+                                <option value="">Select Lecturer</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="semesterId">Semester *</label>
+                            <select id="semesterId" name="semesterId" required>
+                                <option value="">Select Semester</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="sections-section">
+                        <h3>Course Sections</h3>
+                        <div id="sectionsContainer">
+                            <div class="section-item">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Section ID</label>
+                                        <input type="text" name="sections[0][sectionId]" placeholder="e.g., A01">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Lecturer</label>
+                                        <select name="sections[0][lecturerId]">
+                                            <option value="">Same as Course Lecturer</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Capacity</label>
+                                        <input type="number" name="sections[0][capacity]" min="1" max="200" value="30">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>&nbsp;</label>
+                                        <button type="button" onclick="removeSection(this)" class="btn-remove">Remove</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="button" onclick="addSection()" class="btn-secondary">Add Section</button>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Create Course</button>
+                        <button type="button" onclick="window.location.href='/admin/courses'" class="btn-cancel">Cancel</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+    
+    <script src="/js/dashboard.js"></script>
+    <script>
+        let lecturers = [];
+        let semesters = [];
+        let sectionCount = 1;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserInfo();
+            loadFormData();
+        });
+        
+        async function loadFormData() {
+            try {
+                const response = await fetch('/admin/courses/form-data');
+                const data = await response.json();
+                
+                if (data.success) {
+                    lecturers = data.lecturers;
+                    semesters = data.semesters;
+                    
+                    populateLecturers();
+                    populateSemesters();
+                } else {
+                    alert('Failed to load form data');
+                }
+            } catch (error) {
+                console.error('Error loading form data:', error);
+                alert('Error loading form data');
+            }
+        }
+        
+        function populateLecturers() {
+            const mainLecturerSelect = document.getElementById('ownerLecturerId');
+            const sectionLecturerSelects = document.querySelectorAll('select[name^="sections"][name$="[lecturerId]"]');
+            
+            // Populate main lecturer dropdown
+            lecturers.forEach(lecturer => {
+                const option = document.createElement('option');
+                option.value = lecturer._id;
+                option.textContent = lecturer.profile.fullName;
+                mainLecturerSelect.appendChild(option);
+            });
+            
+            // Populate section lecturer dropdowns
+            sectionLecturerSelects.forEach(select => {
+                lecturers.forEach(lecturer => {
+                    const option = document.createElement('option');
+                    option.value = lecturer._id;
+                    option.textContent = lecturer.profile.fullName;
+                    select.appendChild(option);
+                });
+            });
+        }
+        
+        function populateSemesters() {
+            const semesterSelect = document.getElementById('semesterId');
+            
+            semesters.forEach(semester => {
+                const option = document.createElement('option');
+                option.value = semester._id;
+                option.textContent = semester.name;
+                semesterSelect.appendChild(option);
+            });
+        }
+        
+        function addSection() {
+            const container = document.getElementById('sectionsContainer');
+            const sectionDiv = document.createElement('div');
+            sectionDiv.className = 'section-item';
+            sectionDiv.innerHTML = `
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Section ID</label>
+                        <input type="text" name="sections[${sectionCount}][sectionId]" placeholder="e.g., A0${sectionCount + 1}">
+                    </div>
+                    <div class="form-group">
+                        <label>Lecturer</label>
+                        <select name="sections[${sectionCount}][lecturerId]">
+                            <option value="">Same as Course Lecturer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Capacity</label>
+                        <input type="number" name="sections[${sectionCount}][capacity]" min="1" max="200" value="30">
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button type="button" onclick="removeSection(this)" class="btn-remove">Remove</button>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(sectionDiv);
+            
+            // Populate lecturer dropdown for new section
+            const newLecturerSelect = sectionDiv.querySelector('select[name^="sections"][name$="[lecturerId]"]');
+            lecturers.forEach(lecturer => {
+                const option = document.createElement('option');
+                option.value = lecturer._id;
+                option.textContent = lecturer.profile.fullName;
+                newLecturerSelect.appendChild(option);
+            });
+            
+            sectionCount++;
+        }
+        
+        function removeSection(button) {
+            const sectionItem = button.closest('.section-item');
+            sectionItem.remove();
+        }
+        
+        document.getElementById('createCourseForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Convert sections array
+            const sections = [];
+            const sectionKeys = Object.keys(data).filter(key => key.startsWith('sections['));
+            
+            sectionKeys.forEach(key => {
+                const match = key.match(/sections\[(\d+)\]\[(.+)\]/);
+                if (match) {
+                    const index = parseInt(match[1]);
+                    const field = match[2];
+                    
+                    if (!sections[index]) {
+                        sections[index] = {};
+                    }
+                    sections[index][field] = data[key];
+                }
+            });
+            
+            // Remove section entries from data and add sections array
+            sectionKeys.forEach(key => delete data[key]);
+            data.sections = sections.filter(section => section.sectionId); // Only include sections with IDs
+            
+            try {
+                const response = await fetch('/admin/courses', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Course created successfully!');
+                    window.location.href = '/admin/courses';
+                } else {
+                    alert(result.error || 'Failed to create course');
+                }
+            } catch (error) {
+                console.error('Error creating course:', error);
+                alert('Error creating course');
+            }
+        });
+    </script>
+    
+    <style>
+        .form-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .admin-form {
+            max-width: 1000px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            flex: 1;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .sections-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .section-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-remove {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+    </style>
+</body>
+</html>

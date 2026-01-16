@@ -1,0 +1,240 @@
+/* Dashboard Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+    line-height: 1.6;
+}
+
+.dashboard-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-header {
+    background: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dashboard-header h1 {
+    color: #333;
+    font-size: 24px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-info span {
+    color: #666;
+    font-weight: 500;
+}
+
+.logout-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+    background: #c82333;
+}
+
+.dashboard-nav {
+    background: #343a40;
+    padding: 0 2rem;
+}
+
+.dashboard-nav ul {
+    list-style: none;
+    display: flex;
+    gap: 0;
+}
+
+.dashboard-nav .nav-link {
+    display: block;
+    padding: 1rem 1.5rem;
+    color: #adb5bd;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.dashboard-nav .nav-link:hover,
+.dashboard-nav .nav-link.active {
+    color: white;
+    background: #495057;
+    border-bottom-color: #007bff;
+}
+
+.dashboard-content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.dashboard-overview,
+.dashboard-schedule,
+.dashboard-assignments,
+.dashboard-actions {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-overview h2,
+.dashboard-schedule h2,
+.dashboard-assignments h2,
+.dashboard-actions h2 {
+    color: #333;
+    margin-bottom: 1rem;
+    font-size: 20px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.stat-card {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    border-left: 4px solid #007bff;
+}
+
+.stat-card h3 {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.schedule-list,
+.assignments-list {
+    margin-top: 1rem;
+}
+
+.schedule-item,
+.assignment-item {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.schedule-time {
+    font-weight: bold;
+    color: #007bff;
+    min-width: 120px;
+}
+
+.schedule-course,
+.assignment-title {
+    flex: 1;
+    margin: 0 1rem;
+}
+
+.schedule-room,
+.assignment-deadline {
+    color: #666;
+    font-size: 14px;
+}
+
+.assignment-course {
+    font-weight: bold;
+    color: #007bff;
+    min-width: 80px;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.action-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .dashboard-nav ul {
+        flex-wrap: wrap;
+    }
+    
+    .dashboard-content {
+        padding: 1rem;
+    }
+    
+    .stats-grid,
+    .actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .schedule-item,
+    .assignment-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .schedule-time,
+    .assignment-course {
+        min-width: auto;
+    }
+}

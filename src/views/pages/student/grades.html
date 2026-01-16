@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Grades - SSMS</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>My Grades</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="userName"></span></span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="/student/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/student/courses" class="nav-link">My Courses</a></li>
+                <li><a href="/student/schedule" class="nav-link">My Schedule</a></li>
+                <li><a href="/student/grades" class="nav-link active">Grades</a></li>
+                <li><a href="/student/attendance" class="nav-link">Attendance</a></li>
+                <li><a href="/student/enroll" class="nav-link">Registration</a></li>
+            </ul>
+        </nav>
+
+        <main class="dashboard-content">
+            <section class="grades-section">
+                <h2>Grade Report</h2>
+                <div id="gradesList" class="grades-container">
+                    <p>Loading grades...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            loadUserInfo();
+            loadGrades();
+        });
+
+        async function loadGrades() {
+            try {
+                const response = await fetch('/student/grades');
+                const data = await response.json();
+
+                const gradesEl = document.getElementById('gradesList');
+                if (data.success && data.grades.length > 0) {
+                    gradesEl.innerHTML = data.grades.map(courseGrade => `
+                        <div class="grade-course-card">
+                            <h3>${courseGrade.course.code} - ${courseGrade.course.name}</h3>
+                            <div class="assessments-list">
+                                ${courseGrade.assessments.map(assessment => `
+                                    <div class="assessment-item">
+                                        <div class="assessment-name">${assessment.assessment.title || 'Assessment'}</div>
+                                        <div class="assessment-grade">${assessment.grade.score}/100</div>
+                                        <div class="assessment-date">${new Date(assessment.assessment.deadlineAt).toLocaleDateString()}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    gradesEl.innerHTML = '<p>No grades available yet.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading grades:', error);
+                document.getElementById('gradesList').innerHTML = '<p>Unable to load grades.</p>';
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - SSMS</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>Admin Dashboard</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="userName"></span></span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+        
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="/admin/dashboard" class="nav-link active">Dashboard</a></li>
+                <li><a href="/admin/users" class="nav-link">User Management</a></li>
+                <li><a href="/admin/courses" class="nav-link">Course Management</a></li>
+                <li><a href="/admin/semesters" class="nav-link">Semester Management</a></li>
+                <li><a href="/admin/reports" class="nav-link">Reports</a></li>
+            </ul>
+        </nav>
+        
+        <main class="dashboard-content">
+            <section class="dashboard-overview">
+                <h2>System Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Users</h3>
+                        <p class="stat-number" id="totalUsers">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Courses</h3>
+                        <p class="stat-number" id="totalCourses">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Active Semesters</h3>
+                        <p class="stat-number" id="activeSemesters">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Enrollments</h3>
+                        <p class="stat-number" id="totalEnrollments">-</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="dashboard-actions">
+                <h2>Quick Actions</h2>
+                <div class="actions-grid">
+                    <button class="action-btn" onclick="window.location.href='/admin/users/new'">
+                        Add New User
+                    </button>
+                    <button class="action-btn" onclick="window.location.href='/admin/courses/new'">
+                        Create Course
+                    </button>
+                    <button class="action-btn" onclick="window.location.href='/admin/semesters/new'">
+                        Add Semester
+                    </button>
+                    <button class="action-btn" onclick="window.location.href='/admin/reports'">
+                        Generate Report
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <script src="/js/dashboard.js"></script>
+    <script>
+        // Load user info and dashboard data
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserInfo();
+            loadDashboardStats();
+        });
+    </script>
+</body>
+</html>

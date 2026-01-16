@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Schedule - SSMS</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>My Schedule</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="userName"></span></span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="/student/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/student/courses" class="nav-link">My Courses</a></li>
+                <li><a href="/student/schedule" class="nav-link active">My Schedule</a></li>
+                <li><a href="/student/grades" class="nav-link">Grades</a></li>
+                <li><a href="/student/attendance" class="nav-link">Attendance</a></li>
+                <li><a href="/student/enroll" class="nav-link">Registration</a></li>
+            </ul>
+        </nav>
+
+        <main class="dashboard-content">
+            <section class="schedule-section">
+                <h2>Class Schedule</h2>
+                <div class="schedule-filters">
+                    <label for="semesterSelect">Semester:</label>
+                    <select id="semesterSelect" onchange="loadSchedule()">
+                        <option value="">All Semesters</option>
+                    </select>
+                    <label for="startDate">Start Date:</label>
+                    <input type="date" id="startDate" onchange="loadSchedule()">
+                    <label for="endDate">End Date:</label>
+                    <input type="date" id="endDate" onchange="loadSchedule()">
+                </div>
+                <div id="scheduleList" class="schedule-list">
+                    <p>Loading schedule...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            loadUserInfo();
+            loadSchedule();
+        });
+
+        async function loadSchedule() {
+            try {
+                const semesterId = document.getElementById('semesterSelect').value;
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+
+                let url = '/student/schedule';
+                const params = new URLSearchParams();
+                if (semesterId) params.append('semesterId', semesterId);
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                if (params.toString()) url += '?' + params.toString();
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                const scheduleEl = document.getElementById('scheduleList');
+                if (data.success && data.events.length > 0) {
+                    scheduleEl.innerHTML = data.events.map(event => `
+                        <div class="schedule-item">
+                            <div class="schedule-time">${new Date(event.startAt).toLocaleString()}</div>
+                            <div class="schedule-course">${event.courseId.code} - ${event.courseId.name}</div>
+                            <div class="schedule-room">${event.roomId ? event.roomId.code : 'TBA'}</div>
+                            <div class="schedule-semester">${event.semesterId.name}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    scheduleEl.innerHTML = '<p>No classes scheduled for the selected period.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading schedule:', error);
+                document.getElementById('scheduleList').innerHTML = '<p>Unable to load schedule.</p>';
+            }
+        }
+    </script>
+</body>
+
+</html>

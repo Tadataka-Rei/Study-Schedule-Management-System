@@ -1,0 +1,18 @@
+{
+  "name": "ssms",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "Rata",
+  "type": "commonjs",
+  "main": "App.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "express-session": "^1.18.2",
+    "mongoose": "^9.1.3"
+  }
+}

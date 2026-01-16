@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Registration - SSMS</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>Course Registration</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="userName"></span></span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="/student/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/student/courses" class="nav-link">My Courses</a></li>
+                <li><a href="/student/schedule" class="nav-link">My Schedule</a></li>
+                <li><a href="/student/grades" class="nav-link">Grades</a></li>
+                <li><a href="/student/attendance" class="nav-link">Attendance</a></li>
+                <li><a href="/student/enroll" class="nav-link active">Registration</a></li>
+            </ul>
+        </nav>
+
+        <main class="dashboard-content">
+            <section class="enrollment-section">
+                <h2>Available Courses</h2>
+                <div class="enrollment-filters">
+                    <label for="semesterFilter">Filter by Semester:</label>
+                    <select id="semesterFilter" onchange="loadAvailableCourses()">
+                        <option value="">All Semesters</option>
+                    </select>
+                </div>
+                <div id="availableCourses" class="courses-grid">
+                    <p>Loading available courses...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            loadUserInfo();
+            loadAvailableCourses();
+        });
+
+        async function loadAvailableCourses() {
+            try {
+                const semesterId = document.getElementById('semesterFilter').value;
+                let url = '/student/courses/data';
+                if (semesterId) url += `?semesterId=${semesterId}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                const coursesEl = document.getElementById('availableCourses');
+                if (data.success && data.courses.length > 0) {
+                    coursesEl.innerHTML = data.courses.map(course => `
+                        <div class="course-card">
+                            <h3>${course.code} - ${course.name}</h3>
+                            <p><strong>Credits:</strong> ${course.credits}</p>
+                            <p><strong>Lecturer:</strong> ${course.ownerLecturerId.profile.fullName}</p>
+                            <p><strong>Semester:</strong> ${course.semesterId.name}</p>
+                            <div class="course-sections">
+                                ${course.sections.map(section => `
+                                    <div class="section-item">
+                                        <span>Section ${section.sectionId} (${section.enrolledCount}/${section.capacity})</span>
+                                        <button onclick="enrollInCourse('${course._id}', '${section.sectionId}')" 
+                                                class="enroll-btn" 
+                                                ${section.enrolledCount >= section.capacity ? 'disabled' : ''}>
+                                            ${section.enrolledCount >= section.capacity ? 'Full' : 'Enroll'}
+                                        </button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    coursesEl.innerHTML = '<p>No courses available for registration.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading courses:', error);
+                document.getElementById('availableCourses').innerHTML = '<p>Unable to load courses.</p>';
+            }
+        }
+
+        async function enrollInCourse(courseId, sectionId) {
+            try {
+                const response = await fetch('/student/enroll', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ courseId, sectionId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Enrollment request submitted successfully!');
+                    loadAvailableCourses(); // Refresh the list
+                } else {
+                    alert('Enrollment failed: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error enrolling:', error);
+                alert('Unable to submit enrollment request.');
+            }
+        }
+    </script>
+</body>
+
+</html>
