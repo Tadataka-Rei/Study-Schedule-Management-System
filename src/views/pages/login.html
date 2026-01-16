@@ -1,46 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Student Management System</title>
     <link rel="stylesheet" href="/css/auth.css">
 </head>
+
 <body>
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
-                <h1>Student Management System</h1>
+                <h1>Study Schedule Management System</h1>
                 <p>Please login to continue</p>
             </div>
-            
+
             <form id="loginForm" class="auth-form">
                 <div class="form-group">
                     <label for="email">Email Address</label>
                     <input type="email" id="email" name="email" required autocomplete="email">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" required autocomplete="current-password">
                 </div>
-                
+
                 <button type="submit" class="auth-btn">Login</button>
             </form>
-            
+
             <div id="message" class="auth-message"></div>
         </div>
     </div>
-    
+
     <script src="/js/auth.js"></script>
     <script>
         // Backup script to ensure form submission works
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             console.log('Page loaded, checking for form...');
             const form = document.getElementById('loginForm');
             if (form) {
                 console.log('Form found, adding backup listener');
-                form.addEventListener('submit', function(e) {
+                form.addEventListener('submit', function (e) {
                     console.log('Backup handler triggered');
                     if (!window.handleLogin) {
                         console.log('handleLogin not found, preventing default');
@@ -52,4 +54,5 @@
         });
     </script>
 </body>
+
 </html>

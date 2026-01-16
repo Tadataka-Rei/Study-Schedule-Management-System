@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - SSMS</title>
     <link rel="stylesheet" href="/css/dashboard.css">
 </head>
+
 <body>
     <div class="dashboard-container">
         <header class="dashboard-header">
@@ -15,7 +17,7 @@
                 <button onclick="logout()" class="logout-btn">Logout</button>
             </div>
         </header>
-        
+
         <nav class="dashboard-nav">
             <ul>
                 <li><a href="/admin/dashboard" class="nav-link active">Dashboard</a></li>
@@ -25,7 +27,7 @@
                 <li><a href="/admin/reports" class="nav-link">Reports</a></li>
             </ul>
         </nav>
-        
+
         <main class="dashboard-content">
             <section class="dashboard-overview">
                 <h2>System Overview</h2>
@@ -48,7 +50,7 @@
                     </div>
                 </div>
             </section>
-            
+
             <section class="dashboard-actions">
                 <h2>Quick Actions</h2>
                 <div class="actions-grid">
@@ -64,18 +66,22 @@
                     <button class="action-btn" onclick="window.location.href='/admin/reports'">
                         Generate Report
                     </button>
+                    <button class="action-btn" onclick="window.location.href='/admin/logs'">
+                        Logs
+                    </button>
                 </div>
             </section>
         </main>
     </div>
-    
+
     <script src="/js/dashboard.js"></script>
     <script>
         // Load user info and dashboard data
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadUserInfo();
             loadDashboardStats();
         });
     </script>
 </body>
+
 </html>
