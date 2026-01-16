@@ -51,7 +51,7 @@ const enrollInCourse = async (req, res) => {
     const { courseId, sectionId } = req.body;
     const studentId = req.session.user.id;
 
-    // Check if course exists and has available capacity
+    // 1. Validate course and section exists
     const course = await Course.findById(courseId);
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found' });
@@ -62,11 +62,12 @@ const enrollInCourse = async (req, res) => {
       return res.status(404).json({ success: false, error: 'Section not found' });
     }
 
+    // 2. Check Capacity
     if (section.enrolledCount >= section.capacity) {
       return res.status(400).json({ success: false, error: 'Section is full' });
     }
 
-    // Check if student is already enrolled
+    // 3. Check for existing registration (including pending)
     const existingRegistration = await Registration.findOne({
       studentId,
       courseId,
@@ -74,29 +75,29 @@ const enrollInCourse = async (req, res) => {
     });
 
     if (existingRegistration) {
-      return res.status(400).json({ success: false, error: 'Already enrolled in this course' });
+      return res.status(400).json({ success: false, error: 'Already enrolled or pending approval for this course' });
     }
 
-    // Create registration
+    // 4. Create registration record
     const registration = await Registration.create({
       studentId,
       courseId,
       sectionId,
+      semesterId: course.semesterId, // Important: link to the course's semester
       action: 'add',
-      status: 'pending'
+      status: 'pending' // Usually requires Admin/Lecturer approval
     });
 
     res.json({
       success: true,
-      message: 'Enrollment request submitted',
+      message: 'Enrollment request submitted successfully!',
       registration
     });
   } catch (error) {
     console.error('Error enrolling in course:', error);
-    res.status(500).json({ success: false, error: 'Failed to enroll in course' });
+    res.status(500).json({ success: false, error: 'Internal server error during enrollment' });
   }
 };
-
 // Get student's enrollments
 const getMyEnrollments = async (req, res) => {
   try {

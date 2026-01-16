@@ -14,10 +14,10 @@ const courseSchema = new Schema({
     enrolledCount: { type: Number, default: 0 }
   }],
   scheduleTemplate: [{
-    dayOfWeek: [Number],  // [1, 3] for Mon & Wed
-    startTime: [String],  // ["08:00", "13:00"]
-    endTime: [String],    // ["09:30", "14:30"]
-    roomId: [{ type: Schema.Types.ObjectId, ref: 'Room' }] // Multiple rooms
+    dayOfWeek: Number,  // [1, 3] for Mon & Wed
+    startTime: String,  // ["08:00", "13:00"]
+    endTime: String,    // ["09:30", "14:30"]
+    roomId: { type: Schema.Types.ObjectId, ref: 'Room' }
   }],
   policies: {
     addDropDeadline: Date,

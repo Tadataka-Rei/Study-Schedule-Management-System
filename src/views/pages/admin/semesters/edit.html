@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Semester - SSMS</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>Edit Semester</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="userName"></span></span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="/admin/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/admin/users" class="nav-link">User Management</a></li>
+                <li><a href="/admin/courses" class="nav-link">Course Management</a></li>
+                <li><a href="/admin/semesters" class="nav-link active">Semester Management</a></li>
+                <li><a href="/admin/reports" class="nav-link">Reports</a></li>
+            </ul>
+        </nav>
+
+        <main class="dashboard-content">
+            <section class="form-section">
+                <div class="section-header">
+                    <h2>Edit Semester</h2>
+                    <button onclick="window.location.href='/admin/semesters'" class="btn-cancel">Back to
+                        Semesters</button>
+                </div>
+
+                <form id="editSemesterForm" class="admin-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Semester Name *</label>
+                            <input type="text" id="name" name="name" required placeholder="e.g., 2024-2025 Fall">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="startDate">Start Date *</label>
+                            <input type="date" id="startDate" name="startDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="endDate">End Date *</label>
+                            <input type="date" id="endDate" name="endDate" required>
+                        </div>
+                    </div>
+
+                    <div class="registration-windows">
+                        <h3>Registration Windows</h3>
+
+                        <div class="window-section">
+                            <h4>Add/Drop Period</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="addStart">Add Period Start *</label>
+                                    <input type="datetime-local" id="addStart" name="addStart" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="addEnd">Add Period End *</label>
+                                    <input type="datetime-local" id="addEnd" name="addEnd" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="window-section">
+                            <h4>Drop Period</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="dropStart">Drop Period Start *</label>
+                                    <input type="datetime-local" id="dropStart" name="dropStart" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="dropEnd">Drop Period End *</label>
+                                    <input type="datetime-local" id="dropEnd" name="dropEnd" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Update Semester</button>
+                        <button type="button" onclick="window.location.href='/admin/semesters'"
+                            class="btn-cancel">Cancel</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+    <script>
+        let semesterId;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadUserInfo();
+            const urlParams = new URLSearchParams(window.location.search);
+            semesterId = window.location.pathname.split('/')[3]; // Extract semesterId from URL
+            loadSemesterData();
+        });
+
+        async function loadSemesterData() {
+            try {
+                const response = await fetch(`/admin/semesters/${semesterId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    populateForm(data.semester);
+                } else {
+                    alert('Failed to load semester data');
+                    window.location.href = '/admin/semesters';
+                }
+            } catch (error) {
+                console.error('Error loading semester data:', error);
+                alert('Error loading semester data');
+                window.location.href = '/admin/semesters';
+            }
+        }
+
+        function populateForm(semester) {
+            document.getElementById('name').value = semester.name;
+            document.getElementById('startDate').value = new Date(semester.startDate).toISOString().split('T')[0];
+            document.getElementById('endDate').value = new Date(semester.endDate).toISOString().split('T')[0];
+
+            if (semester.registrationWindows) {
+                document.getElementById('addStart').value = new Date(semester.registrationWindows.addStart).toISOString().slice(0, 16);
+                document.getElementById('addEnd').value = new Date(semester.registrationWindows.addEnd).toISOString().slice(0, 16);
+                document.getElementById('dropStart').value = new Date(semester.registrationWindows.dropStart).toISOString().slice(0, 16);
+                document.getElementById('dropEnd').value = new Date(semester.registrationWindows.dropEnd).toISOString().slice(0, 16);
+            }
+        }
+
+        document.getElementById('editSemesterForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch(`/admin/semesters/${semesterId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Semester updated successfully!');
+                    window.location.href = '/admin/semesters';
+                } else {
+                    alert(result.error || 'Failed to update semester');
+                }
+            } catch (error) {
+                console.error('Error updating semester:', error);
+                alert('Error updating semester');
+            }
+        });
+    </script>
+
+    <style>
+        .form-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .admin-form {
+            max-width: 800px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .registration-windows {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+        }
+
+        .window-section {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .window-section h4 {
+            margin-bottom: 1rem;
+            color: #495057;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-cancel:hover {
+            background: #545b62;
+        }
+    </style>
+</body>
+
+</html>

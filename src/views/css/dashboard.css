@@ -212,29 +212,54 @@ body {
         gap: 1rem;
         text-align: center;
     }
-    
+
     .dashboard-nav ul {
         flex-wrap: wrap;
     }
-    
+
     .dashboard-content {
         padding: 1rem;
     }
-    
+
     .stats-grid,
     .actions-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .schedule-item,
     .assignment-item {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.5rem;
     }
-    
+
     .schedule-time,
     .assignment-course {
         min-width: auto;
     }
+}
+
+
+/* enrool test*/
+.enroll-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.enroll-btn:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.section-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
 }

@@ -64,22 +64,27 @@
                 const coursesEl = document.getElementById('availableCourses');
                 if (data.success && data.courses.length > 0) {
                     coursesEl.innerHTML = data.courses.map(course => `
-                        <div class="course-card">
-                            <h3>${course.code} - ${course.name}</h3>
-                            <p><strong>Credits:</strong> ${course.credits}</p>
-                            <p><strong>Lecturer:</strong> ${course.ownerLecturerId.profile.fullName}</p>
-                            <p><strong>Semester:</strong> ${course.semesterId.name}</p>
-                            <div class="course-sections">
-                                ${course.sections.map(section => `
-                                    <div class="section-item">
-                                        <span>Section ${section.sectionId} (${section.enrolledCount}/${section.capacity})</span>
-                                        <button onclick="enrollInCourse('${course._id}', '${section.sectionId}')" 
-                                                class="enroll-btn" 
-                                                ${section.enrolledCount >= section.capacity ? 'disabled' : ''}>
-                                            ${section.enrolledCount >= section.capacity ? 'Full' : 'Enroll'}
-                                        </button>
-                                    </div>
-                                `).join('')}
+    <div class="course-card">
+        <h3>${course.code} - ${course.name}</h3>
+        <p><strong>Credits:</strong> ${course.credits}</p>
+        <p><strong>Lecturer:</strong> ${course.ownerLecturerId.profile.fullName}</p>
+        <p><strong>Semester:</strong> ${course.semesterId.name}</p>
+        
+        <div class="course-sections">
+            <h4>Available Sections:</h4>
+            ${course.sections && course.sections.length > 0 ?
+                            course.sections.map(section => `
+                    <div class="section-row">
+                        <span>Section ${section.sectionId} (${section.enrolledCount}/${section.capacity})</span>
+                        <button onclick="enrollInCourse('${course._id}', '${section.sectionId}')" 
+                                class="enroll-btn" 
+                                ${section.enrolledCount >= section.capacity ? 'disabled' : ''}>
+                            ${section.enrolledCount >= section.capacity ? 'Full' : 'Enroll'}
+                        </button>
+                    </div>
+                `).join('')
+                            : '<p class="no-sections">No sections available for this course.</p>'
+                        }
                             </div>
                         </div>
                     `).join('');

@@ -35,9 +35,9 @@ router.get('/enrollments', getMyEnrollments);
 router.get('/grades/data', getMyGrades);
 router.get('/schedule/data', getTimetable);
 router.get('/attendance/data', getAttendance);
-router.post('/enroll/submit', enrollInCourse);
 router.get('/stats', getStudentDashboardData);
 router.get('/today-events', getTodayEvents);
 router.get('/upcoming-deadlines', getUpcomingDeadlines);
 
+router.post('/enroll', enrollInCourse);
 module.exports = router;
