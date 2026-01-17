@@ -16,7 +16,8 @@ const {
   getAttendance,
   getStudentDashboardData,
   getTodayEvents,
-  getUpcomingDeadlines
+  getUpcomingDeadlines,
+  getAssessmentDetails
 } = require('../controllers/studentController');
 
 const router = express.Router();
@@ -38,6 +39,7 @@ router.get('/attendance/data', getAttendance);
 router.get('/stats', getStudentDashboardData);
 router.get('/today-events', getTodayEvents);
 router.get('/upcoming-deadlines', getUpcomingDeadlines);
+router.get('/assessments/:id', getAssessmentDetails);
 
 router.post('/enroll', enrollInCourse);
 module.exports = router;

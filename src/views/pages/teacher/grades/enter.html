@@ -166,6 +166,14 @@
                     data.courses.forEach(course => {
                         select.innerHTML += `<option value="${course._id}">${course.code} - ${course.name}</option>`;
                     });
+
+                    // Auto-select course if in URL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const courseId = urlParams.get('courseId');
+                    if (courseId) {
+                        select.value = courseId;
+                        loadAssessments();
+                    }
                 }
             } catch (error) {
                 console.error('Error loading courses:', error);

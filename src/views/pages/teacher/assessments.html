@@ -96,6 +96,48 @@
             border-bottom: 1px solid #eee;
             text-align: left;
         }
+
+        .modal-content {
+            background-color: white;
+            margin: 2% auto;
+            /* Reduced top margin to fit more content */
+            padding: 25px;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 8px;
+            max-height: 90vh;
+            /* Maximum 90% of the viewport height */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Make the form or container inside the modal scrollable */
+        #createAssessmentForm,
+        #editAssessmentForm,
+        #submissionsContainer {
+            overflow-y: auto;
+            padding-right: 10px;
+            /* Space for scrollbar */
+            flex-grow: 1;
+        }
+
+        /* Sticky Header for the Submissions Table */
+        .data-table thead th {
+            position: sticky;
+            top: 0;
+            background: #f8f9fa;
+            z-index: 10;
+        }
+
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 10px;
+        }
     </style>
 </head>
 
@@ -159,6 +201,11 @@
                     <input type="text" id="title" name="title" required>
                 </div>
                 <div class="form-group">
+                    <label for="description">Description / Instructions:</label>
+                    <textarea id="description" name="description" rows="4"
+                        placeholder="Enter questions or instructions here..."></textarea>
+                </div>
+                <div class="form-group">
                     <label for="type">Type:</label>
                     <select id="type" name="type" required>
                         <option value="assignment">Assignment</option>
@@ -199,6 +246,10 @@
                     <label for="editTitle">Title:</label>
                     <input type="text" id="editTitle" required>
                 </div>
+                <div class="form-group">
+                    <label for="editDescription">Description / Instructions:</label>
+                    <textarea id="editDescription" rows="4"></textarea>
+                </div>
                 <div class="form-actions">
                     <button type="submit" class="action-btn">Update</button>
                     <button type="button" class="btn-secondary close-modal">Cancel</button>
@@ -211,7 +262,7 @@
         <div class="modal-content" style="max-width: 800px;">
             <h3 id="assessmentTitle">Submissions</h3>
             <div id="submissionsContainer"></div>
-            <div class="form-actions" style="margin-top: 20px;margin-bottom:40px;">
+            <div class="form-actions">
                 <button type="button" class="btn-secondary close-modal">Close</button>
             </div>
         </div>
@@ -331,6 +382,7 @@
                 sectionId: $('#sectionId').val(),
                 type: $('#type').val(),
                 title: $('#title').val(),
+                description: $('#description').val(),
                 weight: $('#weight').val(),
                 deadlineAt: $('#deadlineAt').val(),
                 submissionPolicy: {
@@ -364,6 +416,7 @@
         function openEditModal(item) {
             $('#editAssessmentId').val(item._id);
             $('#editTitle').val(item.title);
+            $('#editDescription').val(item.description || '');
             // Map other fields back to the edit form...
             $('#editAssessmentModal').show();
         }
@@ -372,6 +425,7 @@
             const id = $('#editAssessmentId').val();
             const formData = {
                 title: $('#editTitle').val(),
+                description: $('#editDescription').val(),
                 // add other fields...
             };
 

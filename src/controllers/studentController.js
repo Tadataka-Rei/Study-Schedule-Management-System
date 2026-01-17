@@ -464,6 +464,23 @@ const getUpcomingDeadlines = async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 };
+
+// Get single assessment details (for students to see the question)
+const getAssessmentDetails = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const assessment = await Assessment.findById(id).populate('courseId', 'code name');
+        
+        if (!assessment) {
+            return res.status(404).json({ success: false, error: 'Assessment not found' });
+        }
+
+        res.json({ success: true, assessment });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
 module.exports = {
   getAvailableCourses,
   enrollInCourse,
@@ -474,5 +491,6 @@ module.exports = {
   getStudentDashboardData,
   getTodayEvents,
   getUpcomingDeadlines,
-  getStudentStats
+  getStudentStats,
+  getAssessmentDetails
 };

@@ -76,7 +76,7 @@ const getAllAssessments = async (req, res) => {
 const createAssessment = async (req, res) => {
   try {
     const lecturerId = req.session.user.id;
-    let { courseId, sectionId, semesterId, type, title, weight, deadlineAt, submissionPolicy } = req.body;
+    let { courseId, sectionId, semesterId, type, title, description, weight, deadlineAt, submissionPolicy } = req.body;
 
     if (!courseId) {
       return res.status(400).json({ success: false, error: 'Missing required field: courseId' });
@@ -123,6 +123,7 @@ const createAssessment = async (req, res) => {
       semesterId,
       type,
       title,
+      description,
       weight: parseFloat(weight),
       deadlineAt: new Date(deadlineAt),
       submissionPolicy: submissionPolicy || { lateAllowed: false, latePenalty: 0 }
@@ -183,7 +184,7 @@ const updateAssessment = async (req, res) => {
   try {
     const { id } = req.params;
     const lecturerId = req.session.user.id;
-    const { courseId, sectionId, semesterId, type, title, weight, deadlineAt, submissionPolicy } = req.body;
+    const { courseId, sectionId, semesterId, type, title, description, weight, deadlineAt, submissionPolicy } = req.body;
 
     // Validate required fields
     if (!courseId || !sectionId || !semesterId || !type || !title || weight === undefined || !deadlineAt) {
@@ -221,6 +222,7 @@ const updateAssessment = async (req, res) => {
     assessment.semesterId = semesterId;
     assessment.type = type;
     assessment.title = title;
+    assessment.description = description;
     assessment.weight = parseFloat(weight);
     assessment.deadlineAt = new Date(deadlineAt);
     assessment.submissionPolicy = submissionPolicy || { lateAllowed: false, latePenalty: 0 };
@@ -386,6 +388,16 @@ const submitStudentGrade = async (req, res) => {
   }
 };
 
+// Get grades dashboard page
+const getGradesDashboard = async (req, res) => {
+  try {
+    res.sendFile(path.join(__dirname, '../../views/pages/teacher/grades/index.html'));
+  } catch (error) {
+    console.error('Error loading grades dashboard:', error);
+    res.status(500).send('Error loading grades dashboard');
+  }
+};
+
 module.exports = {
   getCourseAssessments,
   getAllAssessments,
@@ -396,5 +408,6 @@ module.exports = {
   getAssessmentSubmissions,
   getEnterGradesPage,
   getAssessmentGrades,
-  submitStudentGrade
+  submitStudentGrade,
+  getGradesDashboard
 };

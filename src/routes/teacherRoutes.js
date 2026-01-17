@@ -18,7 +18,8 @@ const {
   getAssessmentSubmissions,
   getEnterGradesPage,
   getAssessmentGrades,
-  submitStudentGrade
+  submitStudentGrade,
+  getGradesDashboard
 } = require('../controllers/teacher/teacherAssessmentController');
 const {
   getTodaysCourses,
@@ -59,6 +60,7 @@ router.get('/assessments/:assessmentId/submissions', getAssessmentSubmissions);
 router.post('/submissions/:submissionId/grade', gradeSubmission);
 
 // Grade Entry
+router.get('/grades', getGradesDashboard);
 router.get('/grades/enter', getEnterGradesPage);
 router.get('/assessments/:assessmentId/grades', getAssessmentGrades);
 router.post('/assessments/:assessmentId/grade', submitStudentGrade);

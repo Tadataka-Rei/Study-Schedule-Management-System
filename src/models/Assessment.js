@@ -7,6 +7,7 @@ const assessmentSchema = new Schema({
   semesterId: { type: Schema.Types.ObjectId, ref: 'Semester' },
   type: { type: String, enum: ['assignment', 'quiz', 'midterm', 'final'] },
   title: String,
+  description: String,
   weight: Number, // e.g., 0.2 for 20%
   deadlineAt: Date,
   submissionPolicy: { lateAllowed: Boolean, latePenalty: Number }
