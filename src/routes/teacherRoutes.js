@@ -16,6 +16,9 @@ const {
   updateAssessment,
   deleteAssessment,
   getAssessmentSubmissions,
+  getEnterGradesPage,
+  getAssessmentGrades,
+  submitStudentGrade
 } = require('../controllers/teacher/teacherAssessmentController');
 const {
   getTodaysCourses,
@@ -54,6 +57,11 @@ router.put('/assessments/:id', updateAssessment);
 router.delete('/assessments/:id', deleteAssessment);
 router.get('/assessments/:assessmentId/submissions', getAssessmentSubmissions);
 router.post('/submissions/:submissionId/grade', gradeSubmission);
+
+// Grade Entry
+router.get('/grades/enter', getEnterGradesPage);
+router.get('/assessments/:assessmentId/grades', getAssessmentGrades);
+router.post('/assessments/:assessmentId/grade', submitStudentGrade);
 
 // Resources
 router.get('/rooms', getRooms);

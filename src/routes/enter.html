@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Grades - SSMS</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <style>
+        .filters-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 20px;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            flex: 1;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .grades-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .grades-table th,
+        .grades-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .grades-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .grade-input {
+            width: 80px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .feedback-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .save-btn {
+            padding: 6px 12px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .save-btn:hover {
+            background-color: #219150;
+        }
+
+        .status-saved {
+            color: #27ae60;
+            font-size: 0.85em;
+            margin-left: 10px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>Enter Grades</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="userName"></span></span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="/teacher/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/teacher/courses" class="nav-link">My Courses</a></li>
+                <li><a href="/teacher/schedule" class="nav-link">My Schedule</a></li>
+                <li><a href="/teacher/assessments" class="nav-link">Assessments</a></li>
+                <li><a href="/teacher/grades/enter" class="nav-link active">Grades</a></li>
+                <li><a href="/teacher/attendance/take" class="nav-link">Attendance</a></li>
+            </ul>
+        </nav>
+
+        <main class="dashboard-content">
+            <div class="filters-card">
+                <div class="filter-group">
+                    <label for="courseSelect">Select Course</label>
+                    <select id="courseSelect" onchange="loadAssessments()">
+                        <option value="">-- Select a Course --</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="assessmentSelect">Select Assessment</label>
+                    <select id="assessmentSelect" onchange="loadStudentGrades()" disabled>
+                        <option value="">-- Select an Assessment --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="gradesContainer" style="display: none;">
+                <table class="grades-table">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Name</th>
+                            <th>Score (0-100)</th>
+                            <th>Feedback</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gradesList">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            loadUserInfo();
+            loadCourses();
+        });
+
+        async function loadCourses() {
+            try {
+                const response = await fetch('/teacher/courses', { headers: { 'Accept': 'application/json' } });
+                const data = await response.json();
+                if (data.success) {
+                    const select = document.getElementById('courseSelect');
+                    data.courses.forEach(course => {
+                        select.innerHTML += `<option value="${course._id}">${course.code} - ${course.name}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading courses:', error);
+            }
+        }
+
+        async function loadAssessments() {
+            const courseId = document.getElementById('courseSelect').value;
+            const assessmentSelect = document.getElementById('assessmentSelect');
+
+            assessmentSelect.innerHTML = '<option value="">-- Select an Assessment --</option>';
+            assessmentSelect.disabled = true;
+            document.getElementById('gradesContainer').style.display = 'none';
+
+            if (!courseId) return;
+
+            try {
+                const response = await fetch(`/teacher/courses/${courseId}/assessments`, { headers: { 'Accept': 'application/json' } });
+                const data = await response.json();
+                if (data.success) {
+                    data.assessments.forEach(assessment => {
+                        assessmentSelect.innerHTML += `<option value="${assessment._id}">${assessment.title} (${assessment.type})</option>`;
+                    });
+                    assessmentSelect.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error loading assessments:', error);
+            }
+        }
+
+        async function loadStudentGrades() {
+            const assessmentId = document.getElementById('assessmentSelect').value;
+            if (!assessmentId) {
+                document.getElementById('gradesContainer').style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/teacher/assessments/${assessmentId}/grades`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const tbody = document.getElementById('gradesList');
+                    tbody.innerHTML = data.students.map(student => `
+                        <tr data-student-id="${student.studentId}">
+                            <td>${student.studentCode}</td>
+                            <td>
+                                <div>${student.studentName}</div>
+                                <small style="color:#666">${student.email}</small>
+                            </td>
+                            <td>
+                                <input type="number" class="grade-input" value="${student.grade}" min="0" max="100" step="0.1">
+                            </td>
+                            <td>
+                                <input type="text" class="feedback-input" value="${student.feedback || ''}" placeholder="Optional feedback">
+                            </td>
+                            <td>
+                                <button class="save-btn" onclick="saveGrade('${student.studentId}', this)">Save</button>
+                                <span class="status-saved">Saved!</span>
+                            </td>
+                        </tr>
+                    `).join('');
+                    document.getElementById('gradesContainer').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error loading grades:', error);
+            }
+        }
+
+        async function saveGrade(studentId, btn) {
+            const assessmentId = document.getElementById('assessmentSelect').value;
+            const row = btn.closest('tr');
+            const score = row.querySelector('.grade-input').value;
+            const feedback = row.querySelector('.feedback-input').value;
+            const statusSpan = row.querySelector('.status-saved');
+
+            if (score === '') {
+                alert('Please enter a score');
+                return;
+            }
+
+            btn.textContent = 'Saving...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`/teacher/assessments/${assessmentId}/grade`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ studentId, score, feedback })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    btn.textContent = 'Save';
+                    btn.disabled = false;
+                    statusSpan.style.display = 'inline';
+                    setTimeout(() => { statusSpan.style.display = 'none'; }, 2000);
+                } else {
+                    alert('Error: ' + data.error);
+                    btn.textContent = 'Save';
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error saving grade:', error);
+                alert('Failed to save grade');
+                btn.textContent = 'Save';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+
+</html>

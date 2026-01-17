@@ -291,6 +291,101 @@ const getAssessmentSubmissions = async (req, res) => {
   }
 };
 
+// Get enter grades page
+const getEnterGradesPage = async (req, res) => {
+  try {
+    res.sendFile(path.join(__dirname, '../../views/pages/teacher/grades/enter.html'));
+  } catch (error) {
+    console.error('Error loading enter grades page:', error);
+    res.status(500).send('Error loading enter grades page');
+  }
+};
+
+// Get students and their grades for a specific assessment
+const getAssessmentGrades = async (req, res) => {
+  try {
+    const { assessmentId } = req.params;
+    const lecturerId = req.session.user.id;
+
+    const assessment = await Assessment.findById(assessmentId);
+    if (!assessment) {
+      return res.status(404).json({ success: false, error: 'Assessment not found' });
+    }
+
+    // Verify ownership via course
+    const course = await Course.findOne({ _id: assessment.courseId, ownerLecturerId: lecturerId });
+    if (!course) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    // Get students enrolled in the course (and section if specified)
+    const query = { courseId: assessment.courseId, status: 'approved' };
+    if (assessment.sectionId) {
+      query.sectionId = assessment.sectionId;
+    }
+    
+    const registrations = await Registration.find(query)
+      .populate('studentId', 'profile.fullName profile.studentId profile.email')
+      .sort({ 'studentId.profile.studentId': 1 });
+
+    // Get existing submissions/grades for this assessment
+    const submissions = await Submission.find({ assessmentId });
+    const submissionMap = {};
+    submissions.forEach(sub => {
+      submissionMap[sub.studentId.toString()] = sub;
+    });
+
+    // Combine registration data with grade data
+    const data = registrations.map(reg => {
+      const sub = submissionMap[reg.studentId._id.toString()];
+      return {
+        studentId: reg.studentId._id,
+        studentName: reg.studentId.profile.fullName,
+        studentCode: reg.studentId.profile.studentId,
+        email: reg.studentId.profile.email,
+        grade: sub && sub.grade ? sub.grade.score : '',
+        feedback: sub && sub.grade ? sub.grade.feedback : '',
+        submissionId: sub ? sub._id : null
+      };
+    });
+
+    res.json({ success: true, students: data, assessmentTitle: assessment.title, maxScore: 100 });
+  } catch (error) {
+    console.error('Error fetching assessment grades:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch grades' });
+  }
+};
+
+// Submit a grade for a student (creates submission if missing)
+const submitStudentGrade = async (req, res) => {
+  try {
+    const { assessmentId } = req.params;
+    const { studentId, score, feedback } = req.body;
+    const lecturerId = req.session.user.id;
+
+    // Upsert submission record
+    const submission = await Submission.findOneAndUpdate(
+      { assessmentId, studentId },
+      {
+        $set: {
+          grade: {
+            score: parseFloat(score),
+            feedback: feedback,
+            graderId: lecturerId,
+            gradedAt: new Date()
+          }
+        }
+      },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+
+    res.json({ success: true, message: 'Grade saved' });
+  } catch (error) {
+    console.error('Error saving grade:', error);
+    res.status(500).json({ success: false, error: 'Failed to save grade' });
+  }
+};
+
 module.exports = {
   getCourseAssessments,
   getAllAssessments,
@@ -298,5 +393,8 @@ module.exports = {
   updateAssessment,
   deleteAssessment,
   gradeSubmission,
-  getAssessmentSubmissions
+  getAssessmentSubmissions,
+  getEnterGradesPage,
+  getAssessmentGrades,
+  submitStudentGrade
 };
