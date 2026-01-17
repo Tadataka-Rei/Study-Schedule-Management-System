@@ -76,11 +76,10 @@ const getAllAssessments = async (req, res) => {
 const createAssessment = async (req, res) => {
   try {
     const lecturerId = req.session.user.id;
-    const { courseId, sectionId, semesterId, type, title, weight, deadlineAt, submissionPolicy } = req.body;
+    let { courseId, sectionId, semesterId, type, title, weight, deadlineAt, submissionPolicy } = req.body;
 
-    // Validate required fields
-    if (!courseId || !sectionId || !semesterId || !type || !title || weight === undefined || !deadlineAt) {
-      return res.status(400).json({ success: false, error: 'Missing required fields' });
+    if (!courseId) {
+      return res.status(400).json({ success: false, error: 'Missing required field: courseId' });
     }
 
     // Verify the course belongs to this lecturer
@@ -91,6 +90,24 @@ const createAssessment = async (req, res) => {
 
     if (!course) {
       return res.status(404).json({ success: false, error: 'Course not found or access denied' });
+    }
+
+    // Auto-fill semesterId from the course if not provided
+    if (!semesterId && course.semesterId) {
+      semesterId = course.semesterId;
+    }
+
+    // Check for missing fields and report exactly which one
+    const missingFields = [];
+    if (!sectionId) missingFields.push('sectionId');
+    if (!semesterId) missingFields.push('semesterId');
+    if (!type) missingFields.push('type');
+    if (!title) missingFields.push('title');
+    if (weight === undefined || weight === null || weight === '') missingFields.push('weight');
+    if (!deadlineAt) missingFields.push('deadlineAt');
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({ success: false, error: `Missing required fields: ${missingFields.join(', ')}` });
     }
 
     // Validate type enum

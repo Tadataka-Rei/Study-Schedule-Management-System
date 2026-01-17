@@ -149,6 +149,12 @@
                     </select>
                 </div>
                 <div class="form-group">
+                    <label for="sectionId">Section:</label>
+                    <select id="sectionId" name="sectionId" required>
+                        <option value="">Select Section</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label for="title">Title:</label>
                     <input type="text" id="title" name="title" required>
                 </div>
@@ -212,6 +218,8 @@
     </div>
 
     <script>
+        let availableCourses = [];
+
         $(document).ready(function () {
             // Initial Loads
             loadCourses();
@@ -245,6 +253,20 @@
             $('#lateAllowed, #editLateAllowed').change(function () {
                 const group = $(this).attr('id') === 'lateAllowed' ? '#latePenaltyGroup' : '#editLatePenaltyGroup';
                 $(this).is(':checked') ? $(group).show() : $(group).hide();
+            });
+
+            // Populate sections when course changes
+            $('#courseId').change(function () {
+                const courseId = $(this).val();
+                const sectionSelect = $('#sectionId');
+                sectionSelect.empty().append('<option value="">Select Section</option>');
+
+                const course = availableCourses.find(c => c._id === courseId);
+                if (course && course.sections) {
+                    course.sections.forEach(s => {
+                        sectionSelect.append(`<option value="${s.sectionId}">Section ${s.sectionId}</option>`);
+                    });
+                }
             });
         });
 
@@ -306,6 +328,7 @@
         function createAssessment() {
             const formData = {
                 courseId: $('#courseId').val(),
+                sectionId: $('#sectionId').val(),
                 type: $('#type').val(),
                 title: $('#title').val(),
                 weight: $('#weight').val(),
@@ -336,18 +359,6 @@
                     alert('Failed: ' + errorMsg);
                 }
             });
-
-            $.post('/teacher/assessments/create', formData)
-                .done(function (response) {
-                    if (response.success) {
-                        $('#createAssessmentModal').hide();
-                        $('#createAssessmentForm')[0].reset();
-                        loadAllAssessments();
-                    } else {
-                        alert('Error: ' + response.error);
-                    }
-                })
-                .fail(err => alert('Failed to create assessment.'));
         }
 
         function openEditModal(item) {
@@ -393,6 +404,7 @@
         function loadCourses() {
             $.get('/teacher/courses', { xhr: true }).done(function (response) {
                 if (response.success) {
+                    availableCourses = response.courses;
                     const options = response.courses.map(c => `<option value="${c._id}">${c.code} - ${c.name}</option>`);
                     $('#courseId, #editCourseId').append(options);
                 }
