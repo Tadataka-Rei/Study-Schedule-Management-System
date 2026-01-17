@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Assessments - SSMS</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <style>
+        .filters-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            align-items: center;
+        }
+
+        .filters-bar select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .assessments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .assessment-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #3498db;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .assessment-card.submitted {
+            border-top-color: #27ae60;
+        }
+
+        .assessment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .status-badge {
+            font-size: 0.8em;
+            padding: 4px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-submitted {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .assessment-info p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .view-btn {
+            margin-top: auto;
+            padding: 10px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .view-btn:hover {
+            background: #2980b9;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 25px;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 8px;
+        }
+
+        .description-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            white-space: pre-wrap;
+        }
+
+        textarea.submission-input {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>My Assessments</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="userName"></span></span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="/student/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/student/courses" class="nav-link">My Courses</a></li>
+                <li><a href="/student/schedule" class="nav-link">My Schedule</a></li>
+                <li><a href="/student/grades" class="nav-link">Grades</a></li>
+                <li><a href="/student/attendance" class="nav-link">Attendance</a></li>
+                <li><a href="/student/enroll" class="nav-link">Registration</a></li>
+            </ul>
+        </nav>
+
+        <main class="dashboard-content">
+            <div class="filters-bar">
+                <label>Sort By:</label>
+                <select id="sortFilter" onchange="renderAssessments()">
+                    <option value="deadline">Deadline (Soonest)</option>
+                    <option value="course">Course Name</option>
+                </select>
+            </div>
+
+            <div id="assessmentsList" class="assessments-grid">
+                <p>Loading assessments...</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Submission Modal -->
+    <div id="submissionModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Assessment Title</h2>
+            <p id="modalCourse" style="color:#666; margin-bottom:10px;"></p>
+
+            <h4>Description / Instructions:</h4>
+            <div id="modalDescription" class="description-box"></div>
+
+            <form id="submissionForm">
+                <input type="hidden" id="modalAssessmentId">
+                <h4>Your Submission:</h4>
+                <textarea id="submissionContent" class="submission-input"
+                    placeholder="Enter your answer or paste a link to your work here..." required></textarea>
+
+                <div style="display:flex; gap:10px; justify-content:flex-end;">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Close</button>
+                    <button type="submit" class="action-btn">Submit Work</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+    <script>
+        let allAssessments = [];
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadUserInfo();
+            loadAssessments();
+        });
+
+        async function loadAssessments() {
+            try {
+                const response = await fetch('/student/assessments/data');
+                const data = await response.json();
+                if (data.success) {
+                    allAssessments = data.assessments;
+                    renderAssessments();
+                }
+            } catch (error) {
+                console.error('Error loading assessments:', error);
+                document.getElementById('assessmentsList').innerHTML = '<p>Error loading assessments.</p>';
+            }
+        }
+
+        function renderAssessments() {
+            const sortBy = document.getElementById('sortFilter').value;
+
+            // Sort logic
+            allAssessments.sort((a, b) => {
+                if (sortBy === 'deadline') return new Date(a.deadlineAt) - new Date(b.deadlineAt);
+                if (sortBy === 'course') return a.course.code.localeCompare(b.course.code);
+                return 0;
+            });
+
+            const container = document.getElementById('assessmentsList');
+            if (allAssessments.length === 0) {
+                container.innerHTML = '<p>No active assessments found.</p>';
+                return;
+            }
+
+            container.innerHTML = allAssessments.map(a => `
+                <div class="assessment-card ${a.status}">
+                    <div class="assessment-header">
+                        <h3 style="margin:0">${a.title}</h3>
+                        <span class="status-badge status-${a.status}">${a.status}</span>
+                    </div>
+                    <div class="assessment-info">
+                        <p><strong>Course:</strong> ${a.course.code} - ${a.course.name}</p>
+                        <p><strong>Deadline:</strong> ${new Date(a.deadlineAt).toLocaleString()}</p>
+                        <p><strong>Type:</strong> ${a.type}</p>
+                    </div>
+                    <button class="view-btn" onclick='openModal(${JSON.stringify(a).replace(/'/g, "&#39;")})'>
+                        ${a.status === 'submitted' ? 'View / Update Submission' : 'View & Submit'}
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function openModal(assessment) {
+            document.getElementById('modalTitle').textContent = assessment.title;
+            document.getElementById('modalCourse').textContent = `${assessment.course.code} - ${assessment.course.name}`;
+            document.getElementById('modalDescription').textContent = assessment.description || 'No description provided.';
+            document.getElementById('modalAssessmentId').value = assessment._id;
+
+            // Pre-fill if already submitted
+            const content = assessment.submission ? assessment.submission.content : '';
+            document.getElementById('submissionContent').value = content;
+
+            document.getElementById('submissionModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('submissionModal').style.display = 'none';
+        }
+
+        document.getElementById('submissionForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const id = document.getElementById('modalAssessmentId').value;
+            const content = document.getElementById('submissionContent').value;
+
+            try {
+                const response = await fetch(`/student/assessments/${id}/submit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Submission successful!');
+                    closeModal();
+                    loadAssessments(); // Reload to update status
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Submission error:', error);
+                alert('Failed to submit.');
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function (event) {
+            const modal = document.getElementById('submissionModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+
+</html>

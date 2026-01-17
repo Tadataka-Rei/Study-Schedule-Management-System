@@ -5,6 +5,7 @@ const submissionSchema = new Schema({
   assessmentId: { type: Schema.Types.ObjectId, ref: 'Assessment' },
   studentId: { type: Schema.Types.ObjectId, ref: 'User' },
   submittedAt: { type: Date, default: Date.now },
+  content: String,
   files: [{ url: String, name: String }],
   grade: {
     score: Number,

@@ -6,6 +6,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Grades - SSMS</title>
     <link rel="stylesheet" href="/css/dashboard.css">
+    <style>
+        .grades-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .grade-course-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #3498db;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .course-header {
+            margin-bottom: 15px;
+        }
+
+        .view-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+        }
+
+        .view-btn:hover {
+            background-color: #2980b9;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+        }
+
+        .assessment-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .assessment-row:last-child {
+            border-bottom: none;
+        }
+
+        .grade-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body>
@@ -24,7 +103,6 @@
                 <li><a href="/student/courses" class="nav-link">My Courses</a></li>
                 <li><a href="/student/schedule" class="nav-link">My Schedule</a></li>
                 <li><a href="/student/grades" class="nav-link active">Grades</a></li>
-                <li><a href="/student/attendance" class="nav-link">Attendance</a></li>
                 <li><a href="/student/enroll" class="nav-link">Registration</a></li>
             </ul>
         </nav>
@@ -32,15 +110,32 @@
         <main class="dashboard-content">
             <section class="grades-section">
                 <h2>Grade Report</h2>
-                <div id="gradesList" class="grades-container">
+                <div id="gradesList" class="grades-grid">
                     <p>Loading grades...</p>
                 </div>
             </section>
         </main>
     </div>
 
+    <!-- Details Modal -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2 id="modalCourseTitle" style="margin:0;">Course Details</h2>
+                <button onclick="closeModal()"
+                    style="background:none; border:none; font-size:1.5em; cursor:pointer;">&times;</button>
+            </div>
+            <div id="modalBody"></div>
+            <div style="margin-top:20px; text-align:right;">
+                <button onclick="closeModal()" class="view-btn" style="width:auto; padding: 8px 20px;">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script src="/js/dashboard.js"></script>
     <script>
+        let gradesData = [];
+
         document.addEventListener('DOMContentLoaded', function () {
             loadUserInfo();
             loadGrades();
@@ -48,23 +143,19 @@
 
         async function loadGrades() {
             try {
-                const response = await fetch('/student/grades');
+                const response = await fetch('/student/grades/data');
                 const data = await response.json();
 
                 const gradesEl = document.getElementById('gradesList');
                 if (data.success && data.grades.length > 0) {
-                    gradesEl.innerHTML = data.grades.map(courseGrade => `
+                    gradesData = data.grades;
+                    gradesEl.innerHTML = data.grades.map((item, index) => `
                         <div class="grade-course-card">
-                            <h3>${courseGrade.course.code} - ${courseGrade.course.name}</h3>
-                            <div class="assessments-list">
-                                ${courseGrade.assessments.map(assessment => `
-                                    <div class="assessment-item">
-                                        <div class="assessment-name">${assessment.assessment.title || 'Assessment'}</div>
-                                        <div class="assessment-grade">${assessment.grade.score}/100</div>
-                                        <div class="assessment-date">${new Date(assessment.assessment.deadlineAt).toLocaleDateString()}</div>
-                                    </div>
-                                `).join('')}
+                            <div class="course-header">
+                                <h3>${item.course.code} - ${item.course.name}</h3>
+                                <p style="color:#666; margin-top:5px;">Graded Assessments: ${item.assessments.length}</p>
                             </div>
+                            <button class="view-btn" onclick="openModal(${index})">View Details</button>
                         </div>
                     `).join('');
                 } else {
@@ -73,6 +164,48 @@
             } catch (error) {
                 console.error('Error loading grades:', error);
                 document.getElementById('gradesList').innerHTML = '<p>Unable to load grades.</p>';
+            }
+        }
+
+        function openModal(index) {
+            const item = gradesData[index];
+            document.getElementById('modalCourseTitle').textContent = `${item.course.code} - ${item.course.name}`;
+
+            const modalBody = document.getElementById('modalBody');
+            if (item.assessments.length === 0) {
+                modalBody.innerHTML = '<p>No graded assessments.</p>';
+            } else {
+                modalBody.innerHTML = item.assessments.map(a => `
+                    <div class="assessment-row">
+                        <div>
+                            <div style="font-weight:bold;">${a.assessment.title}</div>
+                            <div style="font-size:0.85em; color:#666;">
+                                ${a.assessment.type.toUpperCase()} • Weight: ${a.assessment.weight}%
+                            </div>
+                            ${a.grade.feedback ? `<div style="font-size:0.85em; color:#555; margin-top:4px;">Feedback: ${a.grade.feedback}</div>` : ''}
+                        </div>
+                        <div style="text-align:right;">
+                            <span class="grade-badge">${a.grade.score} / 100</span>
+                            <div style="font-size:0.8em; color:#999; margin-top:4px;">
+                                ${new Date(a.grade.gradedAt).toLocaleDateString()}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('detailsModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('detailsModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function (event) {
+            const modal = document.getElementById('detailsModal');
+            if (event.target == modal) {
+                closeModal();
             }
         }
     </script>

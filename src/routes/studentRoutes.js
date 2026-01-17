@@ -17,7 +17,10 @@ const {
   getStudentDashboardData,
   getTodayEvents,
   getUpcomingDeadlines,
-  getAssessmentDetails
+  getAssessmentDetails,
+  getAssessmentsPage,
+  getStudentAssessments,
+  submitAssessment
 } = require('../controllers/studentController');
 
 const router = express.Router();
@@ -28,6 +31,7 @@ router.get('/courses', showStudentCourses);
 router.get('/schedule', getTimetable);
 router.get('/grades', showStudentGrades);
 router.get('/attendance', showStudentAttendance);
+router.get('/assessments', getAssessmentsPage);
 router.get('/enroll', showStudentEnroll);
 
 // API Routes (JSON)
@@ -39,7 +43,9 @@ router.get('/attendance/data', getAttendance);
 router.get('/stats', getStudentDashboardData);
 router.get('/today-events', getTodayEvents);
 router.get('/upcoming-deadlines', getUpcomingDeadlines);
+router.get('/assessments/data', getStudentAssessments);
 router.get('/assessments/:id', getAssessmentDetails);
+router.post('/assessments/:id/submit', submitAssessment);
 
 router.post('/enroll', enrollInCourse);
 module.exports = router;

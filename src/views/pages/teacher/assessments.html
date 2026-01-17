@@ -270,6 +270,7 @@
 
     <script>
         let availableCourses = [];
+        let currentSubmissions = [];
 
         $(document).ready(function () {
             // Initial Loads
@@ -472,29 +473,96 @@
             $.get(`/teacher/assessments/${assessmentId}/submissions`)
                 .done(function (response) {
                     if (response.success) {
-                        let table = `<table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Student</th>
-                                <th>Date</th>
-                                <th>Grade</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
-
-                        response.submissions.forEach(s => {
-                            table += `<tr>
-                            <td>${s.studentId.profile.fullName}</td>
-                            <td>${new Date(s.submittedAt).toLocaleDateString()}</td>
-                            <td>${s.grade ? s.grade.score + '%' : 'Pending'}</td>
-                            <td><button class="action-btn" onclick="grade('${s._id}')">Grade</button></td>
-                        </tr>`;
-                        });
-
-                        table += `</tbody></table>`;
-                        $('#submissionsContainer').html(table);
+                        currentSubmissions = response.submissions;
+                        renderSubmissionsTable();
                     }
+                });
+        }
+
+        function renderSubmissionsTable() {
+            let table = `<table class="data-table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Date</th>
+                    <th>Grade</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+            currentSubmissions.forEach(s => {
+                table += `<tr>
+                <td>${s.studentId.profile.fullName}</td>
+                <td>${new Date(s.submittedAt).toLocaleDateString()}</td>
+                <td>${s.grade ? s.grade.score + '%' : 'Pending'}</td>
+                <td><button class="action-btn" onclick="viewSubmissionDetail('${s._id}')">View</button></td>
+            </tr>`;
+            });
+
+            table += `</tbody></table>`;
+            $('#submissionsContainer').html(table);
+        }
+
+        function viewSubmissionDetail(submissionId) {
+            const submission = currentSubmissions.find(s => s._id === submissionId);
+            if (!submission) return;
+
+            const content = submission.content ? submission.content : (submission.files && submission.files.length ? 'Files attached' : 'No content submitted');
+
+            const html = `
+                <div class="submission-detail">
+                    <button class="btn-secondary" onclick="renderSubmissionsTable()" style="margin-bottom:15px; padding: 5px 10px;">&larr; Back to List</button>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                        <h4 style="margin-top:0">Student: ${submission.studentId.profile.fullName}</h4>
+                        <p><strong>Submitted:</strong> ${new Date(submission.submittedAt).toLocaleString()}</p>
+                        <hr style="border-top: 1px solid #ddd; margin: 10px 0;">
+                        <strong>Work Content:</strong>
+                        <div style="white-space: pre-wrap; margin-top: 10px; background: white; padding: 10px; border: 1px solid #eee; max-height: 300px; overflow-y: auto;">${content}</div>
+                    </div>
+                    
+                    <div class="grading-section" style="background: #e8f4f8; padding: 15px; border-radius: 4px;">
+                        <h4 style="margin-top:0">Grade Submission</h4>
+                        <div class="form-group">
+                            <label>Score (0-100):</label>
+                            <input type="number" id="gradeScore" value="${submission.grade ? submission.grade.score : ''}" min="0" max="100" style="width: 100px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Feedback:</label>
+                            <textarea id="gradeFeedback" rows="3" style="width:100%">${submission.grade ? submission.grade.feedback || '' : ''}</textarea>
+                        </div>
+                        <button class="action-btn" onclick="submitGrade('${submission._id}')">Save Grade</button>
+                    </div>
+                </div>
+            `;
+            $('#submissionsContainer').html(html);
+        }
+
+        function submitGrade(submissionId) {
+            const score = $('#gradeScore').val();
+            const feedback = $('#gradeFeedback').val();
+
+            if (score === '') {
+                alert('Please enter a score');
+                return;
+            }
+
+            $.post(`/teacher/submissions/${submissionId}/grade`, { score, feedback })
+                .done(function (response) {
+                    if (response.success) {
+                        alert('Grade saved!');
+                        // Update local data
+                        const sub = currentSubmissions.find(s => s._id === submissionId);
+                        if (sub) {
+                            sub.grade = { score, feedback };
+                        }
+                        renderSubmissionsTable();
+                    } else {
+                        alert('Error: ' + response.error);
+                    }
+                })
+                .fail(function () {
+                    alert('Failed to save grade');
                 });
         }
     </script>

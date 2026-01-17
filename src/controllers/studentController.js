@@ -481,6 +481,90 @@ const getAssessmentDetails = async (req, res) => {
     }
 };
 
+// Get assessments page
+const getAssessmentsPage = (req, res) => {
+    res.sendFile(path.join(__dirname, '../views/pages/student/assessments.html'));
+};
+
+// Get all assessments for enrolled courses
+const getStudentAssessments = async (req, res) => {
+    try {
+        const studentId = req.session.user.id;
+
+        // 1. Get enrolled courses
+        const registrations = await Registration.find({
+            studentId,
+            status: 'approved'
+        }).distinct('courseId');
+
+        // 2. Find assessments for these courses
+        const assessments = await Assessment.find({
+            courseId: { $in: registrations }
+        })
+        .populate('courseId', 'code name')
+        .sort({ deadlineAt: 1 });
+
+        // 3. Find existing submissions for these assessments
+        const submissions = await Submission.find({
+            studentId,
+            assessmentId: { $in: assessments.map(a => a._id) }
+        });
+
+        const submissionMap = {};
+        submissions.forEach(sub => {
+            submissionMap[sub.assessmentId.toString()] = sub;
+        });
+
+        // 4. Merge data
+        const data = assessments.map(assessment => {
+            const sub = submissionMap[assessment._id.toString()];
+            return {
+                _id: assessment._id,
+                title: assessment.title,
+                description: assessment.description,
+                type: assessment.type,
+                weight: assessment.weight,
+                deadlineAt: assessment.deadlineAt,
+                course: assessment.courseId,
+                status: sub ? 'submitted' : 'pending',
+                submission: sub ? {
+                    submittedAt: sub.submittedAt,
+                    grade: sub.grade,
+                    content: sub.content
+                } : null
+            };
+        });
+
+        res.json({ success: true, assessments: data });
+    } catch (error) {
+        console.error('Error fetching student assessments:', error);
+        res.status(500).json({ success: false, error: 'Failed to fetch assessments' });
+    }
+};
+
+// Submit an assessment
+const submitAssessment = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const studentId = req.session.user.id;
+        const { content } = req.body; // Expecting text content or link
+
+        // Upsert submission
+        const submission = await Submission.findOneAndUpdate(
+            { studentId, assessmentId: id },
+            {
+                $set: { content, submittedAt: new Date() }
+            },
+            { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
+
+        res.json({ success: true, message: 'Assessment submitted successfully', submission });
+    } catch (error) {
+        console.error('Error submitting assessment:', error);
+        res.status(500).json({ success: false, error: 'Failed to submit assessment' });
+    }
+};
+
 module.exports = {
   getAvailableCourses,
   enrollInCourse,
@@ -492,5 +576,8 @@ module.exports = {
   getTodayEvents,
   getUpcomingDeadlines,
   getStudentStats,
-  getAssessmentDetails
+  getAssessmentDetails,
+  getAssessmentsPage,
+  getStudentAssessments,
+  submitAssessment
 };
