@@ -54,14 +54,14 @@ const createCourse = async (req, res) => {
       name,
       credits: parseInt(credits),
       ownerLecturerId,
-      semesterId
+      semesterId,
+      scheduleTemplate: [] // Initialize empty
     };
-    
-    // Add sections if provided
+
     if (sections && Array.isArray(sections)) {
       courseData.sections = sections.map(section => ({
         sectionId: section.sectionId,
-        lecturerId: section.lecturerId,
+        lecturerId: section.lecturerId || ownerLecturerId, // Fix for the empty string bug
         capacity: parseInt(section.capacity),
         enrolledCount: 0,
         schedule: section.schedule ? section.schedule.map(sched => ({
@@ -71,8 +71,14 @@ const createCourse = async (req, res) => {
           roomId: sched.roomId
         })) : []
       }));
+
+      // AUTO-POPULATE TEMPLATE:
+      // Use the schedule from the first section as the course-wide template
+      if (courseData.sections.length > 0 && courseData.sections[0].schedule.length > 0) {
+        courseData.scheduleTemplate = courseData.sections[0].schedule;
+      }
     }
-    
+
     const course = await Course.create(courseData);
     
     res.json({ 

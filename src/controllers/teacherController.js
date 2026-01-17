@@ -166,47 +166,67 @@ const getTimetable = async (req, res) => {
 const updateMyCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { scheduleTemplate, policies } = req.body;
     const lecturerId = req.session.user.id;
 
-    // Verify the course belongs to this lecturer
-    const course = await Course.findOne({
-      _id: courseId,
-      ownerLecturerId: lecturerId
-    });
+    // DEBUG LOGS - Check these in your terminal
+    console.log("--- Course Update Debug ---");
+    console.log("Target Course ID:", courseId);
+    console.log("Teacher ID from Session:", lecturerId);
 
-    if (!course) {
-      return res.status(404).json({ success: false, error: 'Course not found or access denied' });
+    // 1. Try finding by ID only first to see if it even exists
+    const checkExist = await Course.findById(courseId);
+    if (!checkExist) {
+        console.log("Error: Course ID does not exist in DB at all.");
+        return res.status(404).json({ success: false, error: 'Course ID not found' });
     }
 
-    // Update scheduleTemplate if provided
-    if (scheduleTemplate && Array.isArray(scheduleTemplate)) {
-      course.scheduleTemplate = scheduleTemplate.map(item => ({
+    // 2. Now check if the owner matches
+    // Note: Use .toString() to compare IDs safely
+    if (checkExist.ownerLecturerId.toString() !== lecturerId.toString()) {
+        console.log("Error: Ownership mismatch!");
+        console.log("DB Owner:", checkExist.ownerLecturerId);
+        console.log("Session User:", lecturerId);
+        return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    // If we passed the checks, perform the update
+    const { scheduleTemplate, policies } = req.body;
+
+    // Update logic
+    if (scheduleTemplate) {
+      checkExist.scheduleTemplate = scheduleTemplate.map(item => ({
         dayOfWeek: parseInt(item.dayOfWeek),
         startTime: item.startTime,
         endTime: item.endTime,
-        roomId: item.roomId
+        roomId: item.roomId && item.roomId !== "" ? item.roomId : null 
       }));
     }
 
-    // Update policies if provided
     if (policies) {
-      course.policies = {
-        addDropDeadline: policies.addDropDeadline ? new Date(policies.addDropDeadline) : course.policies.addDropDeadline,
-        attendanceWeight: policies.attendanceWeight !== undefined ? parseFloat(policies.attendanceWeight) : course.policies.attendanceWeight,
-        gradingSchema: policies.gradingSchema || course.policies.gradingSchema
+      checkExist.policies = {
+        addDropDeadline: policies.addDropDeadline ? new Date(policies.addDropDeadline) : checkExist.policies.addDropDeadline,
+        attendanceWeight: policies.attendanceWeight !== undefined ? parseFloat(policies.attendanceWeight) : checkExist.policies.attendanceWeight,
+        gradingSchema: (typeof policies.gradingSchema === 'string') 
+                        ? JSON.parse(policies.gradingSchema) 
+                        : policies.gradingSchema
       };
     }
 
-    await course.save();
+    // Sync sections
+    if (checkExist.sections && checkExist.sections.length > 0) {
+        checkExist.sections.forEach(section => {
+            section.schedule = checkExist.scheduleTemplate;
+        });
+    }
 
+    await checkExist.save();
     res.json({ success: true, message: 'Course updated successfully' });
+
   } catch (error) {
-    console.error('Error updating course:', error);
-    res.status(500).json({ success: false, error: 'Failed to update course' });
+    console.error('Update Error:', error);
+    res.status(500).json({ success: false, error: error.message });
   }
 };
-
 // Get all rooms
 const getRooms = async (req, res) => {
   try {
