@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Attendance - SSMS</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <style>
+        .class-info-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border-left: 5px solid #3498db;
+        }
+
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .attendance-table th,
+        .attendance-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .attendance-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .status-options {
+            display: flex;
+            gap: 15px;
+        }
+
+        .status-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .status-present {
+            color: #27ae60;
+        }
+
+        .status-absent {
+            color: #e74c3c;
+        }
+
+        .status-late {
+            color: #f39c12;
+        }
+
+        .status-excused {
+            color: #3498db;
+        }
+
+        .notes-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .save-bar {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>Mark Attendance</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="userName"></span></span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="/teacher/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/teacher/courses" class="nav-link">My Courses</a></li>
+                <li><a href="/teacher/schedule" class="nav-link">My Schedule</a></li>
+                <li><a href="/teacher/assessments" class="nav-link">Assessments</a></li>
+                <li><a href="/teacher/grades" class="nav-link">Grades</a></li>
+                <li><a href="/teacher/attendance/take" class="nav-link active">Attendance</a></li>
+            </ul>
+        </nav>
+
+        <main class="dashboard-content">
+            <div id="loading" class="loading">Loading class data...</div>
+
+            <div id="attendanceContent" style="display: none;">
+                <div class="class-info-card" id="classInfo">
+                    <!-- Populated by JS -->
+                </div>
+
+                <form id="attendanceForm">
+                    <table class="attendance-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>ID</th>
+                                <th>Status</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsList">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+
+                    <div class="save-bar">
+                        <button type="button" class="btn-secondary"
+                            onclick="window.location.href='/teacher/attendance/take'">Cancel</button>
+                        <button type="submit" class="action-btn">Save Attendance</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+    <script>
+        const eventId = window.location.pathname.split('/').pop();
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadUserInfo();
+            loadAttendanceData();
+        });
+
+        async function loadAttendanceData() {
+            try {
+                const response = await fetch(`/teacher/attendance/${eventId}`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    renderClassInfo(data.event);
+                    renderStudents(data.students);
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('attendanceContent').style.display = 'block';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to load attendance data');
+            }
+        }
+
+        function renderClassInfo(event) {
+            const date = new Date(event.startTime).toLocaleDateString();
+            const time = `${new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(event.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+            document.getElementById('classInfo').innerHTML = `
+                <h2 style="margin-top:0">${event.courseCode} - ${event.courseName}</h2>
+                <p><strong>Date:</strong> ${date} | <strong>Time:</strong> ${time}</p>
+                <p><strong>Room:</strong> ${event.room}</p>
+            `;
+        }
+
+        function renderStudents(students) {
+            const tbody = document.getElementById('studentsList');
+            if (students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">No students enrolled in this section.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = students.map(student => `
+                <tr data-id="${student._id}">
+                    <td>
+                        <div style="font-weight:bold">${student.fullName}</div>
+                        <div style="font-size:0.85em; color:#666">${student.email}</div>
+                    </td>
+                    <td>${student.studentCode}</td>
+                    <td>
+                        <div class="status-options">
+                            <label class="status-option status-present">
+                                <input type="radio" name="status_${student._id}" value="present" ${student.status === 'present' || !student.status ? 'checked' : ''}> Present
+                            </label>
+                            <label class="status-option status-absent">
+                                <input type="radio" name="status_${student._id}" value="absent" ${student.status === 'absent' ? 'checked' : ''}> Absent
+                            </label>
+                            <label class="status-option status-late">
+                                <input type="radio" name="status_${student._id}" value="late" ${student.status === 'late' ? 'checked' : ''}> Late
+                            </label>
+                            <label class="status-option status-excused">
+                                <input type="radio" name="status_${student._id}" value="excused" ${student.status === 'excused' ? 'checked' : ''}> Excused
+                            </label>
+                        </div>
+                    </td>
+                    <td>
+                        <input type="text" class="notes-input" name="notes_${student._id}" value="${student.notes || ''}" placeholder="Optional notes">
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('attendanceForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const attendanceData = [];
+            const rows = document.querySelectorAll('#studentsList tr');
+
+            rows.forEach(row => {
+                const id = row.getAttribute('data-id');
+                const statusInput = row.querySelector(`input[name="status_${id}"]:checked`);
+                const status = statusInput ? statusInput.value : 'absent';
+                const notes = row.querySelector(`input[name="notes_${id}"]`).value;
+
+                attendanceData.push({
+                    studentId: id,
+                    status,
+                    notes
+                });
+            });
+
+            try {
+                const response = await fetch(`/teacher/attendance/${eventId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ attendance: attendanceData })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Attendance saved successfully!');
+                    window.location.href = '/teacher/attendance/take';
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error saving attendance:', error);
+                alert('Failed to save attendance.');
+            }
+        });
+    </script>
+</body>
+
+</html>

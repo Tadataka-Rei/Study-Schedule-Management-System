@@ -200,15 +200,25 @@ const getTimetable = async (req, res) => {
       return res.sendFile(path.join(__dirname, '../views/pages/student/schedule.html'));
     }
 
-    // Get student's enrolled courses
-    const enrolledCourseIds = await Registration.find({
+    // Get student's approved enrollments with section info
+    const registrations = await Registration.find({
       studentId,
       status: 'approved'
-    }).distinct('courseId');
+    }).select('courseId sectionId');
+
+    if (!registrations || registrations.length === 0) {
+      return res.json({ success: true, events: [] });
+    }
+
+    // Build query to match specific course AND section pairs
+    const sectionMatches = registrations.map(reg => ({
+      courseId: reg.courseId,
+      sectionId: reg.sectionId
+    }));
 
     let matchStage = {
       type: 'class',
-      courseId: { $in: enrolledCourseIds }
+      $or: sectionMatches
     };
 
     if (semesterId) matchStage.semesterId = semesterId;
@@ -282,20 +292,41 @@ const getStudentDashboardData = async (req, res) => {
         todayEnd.setHours(23, 59, 59, 999);
 
         // 1. Get Enrolled Courses & Total Credits
-        const user = await User.findById(studentId).populate('enrollments.courseId');
-        const enrolledCoursesCount = user.enrollments.filter(e => e.status === 'approved').length;
-        const totalCredits = user.enrollments.reduce((sum, e) => {
-            return e.status === 'approved' ? sum + (e.courseId.credits || 0) : sum;
+        // Use Registration model instead of User.enrollments
+        const registrations = await Registration.find({
+            studentId,
+            status: 'approved'
+        }).populate('courseId');
+
+        const enrolledCoursesCount = registrations.length;
+        const totalCredits = registrations.reduce((sum, r) => {
+            return sum + (r.courseId ? (r.courseId.credits || 0) : 0);
         }, 0);
 
         // 2. Fetch Today's Classes from TimetableEvents
-        // We look for events for the student's enrolled courses that happen today
+        // Filter by specific sections
+        let todayClasses = [];
+        if (registrations.length > 0) {
+            const sectionMatches = registrations.map(r => ({
+                courseId: r.courseId._id,
+                sectionId: r.sectionId
+            }));
+
+            todayClasses = await TimetableEvent.find({
+                $or: sectionMatches,
+                startAt: { $gte: todayStart, $lte: todayEnd },
+                type: 'class'
+            }).populate('courseId', 'code name').populate('roomId', 'code');
+        }
+
+        /* Old logic removed:
         const enrolledIds = user.enrollments.map(e => e.courseId._id);
         const todayClasses = await TimetableEvent.find({
             courseId: { $in: enrolledIds },
             startAt: { $gte: todayStart, $lte: todayEnd },
             type: 'class'
-        }).populate('courseId', 'code name').populate('roomId', 'code');
+        }).populate('courseId', 'code name').populate('roomId', 'code'); 
+        */
 
         res.json({
             success: true,
@@ -319,14 +350,14 @@ const getStudentStats = async (req, res) => {
     try {
         const studentId = req.session.user.id;
 
-        // 1. Get User and populate Course credits
-        const user = await User.findById(studentId).populate('enrollments.courseId');
+        // 1. Get Approved Registrations
+        const registrations = await Registration.find({
+            studentId,
+            status: 'approved'
+        }).populate('courseId');
         
-        // Filter only approved enrollments
-        const approvedEnrollments = user.enrollments.filter(e => e.status === 'approved');
-        
-        const enrolledCount = approvedEnrollments.length;
-        const totalCredits = approvedEnrollments.reduce((sum, e) => sum + (e.courseId.credits || 0), 0);
+        const enrolledCount = registrations.length;
+        const totalCredits = registrations.reduce((sum, r) => sum + (r.courseId ? (r.courseId.credits || 0) : 0), 0);
 
         // 2. Simple GPA Calculation (Average of graded submissions)
         const gradedSubmissions = await Submission.find({ 
@@ -361,19 +392,26 @@ const getTodayEvents = async (req, res) => {
     try {
         const studentId = req.session.user.id;
         
-        // 1. Get IDs of courses student is approved for
-        const enrolledCourseIds = await Registration.find({
+        // 1. Get approved registrations with sectionId
+        const registrations = await Registration.find({
             studentId,
             status: 'approved'
-        }).distinct('courseId');
+        }).select('courseId sectionId');
+
+        if (registrations.length === 0) return res.json({ success: true, events: [] });
+
+        const sectionMatches = registrations.map(reg => ({
+            courseId: reg.courseId,
+            sectionId: reg.sectionId
+        }));
 
         // 2. Set time range for "Today" (00:00 to 23:59)
         const start = new Date(); start.setHours(0,0,0,0);
         const end = new Date(); end.setHours(23,59,59,999);
 
-        // 3. Find events for those courses
+        // 3. Find events for those specific sections
         const events = await TimetableEvent.find({
-            courseId: { $in: enrolledCourseIds },
+            $or: sectionMatches,
             startAt: { $gte: start, $lte: end },
             type: 'class'
         })

@@ -36,6 +36,13 @@ const getAttendanceForm = async (req, res) => {
     const { eventId } = req.params;
     const lecturerId = req.session.user.id;
 
+    // Check if request is for JSON (API call) or HTML (page load)
+    const isJsonRequest = req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'));
+
+    if (!isJsonRequest) {
+      return res.sendFile(path.join(__dirname, '../../views/pages/teacher/attendance/form.html'));
+    }
+
     if (!mongoose.Types.ObjectId.isValid(eventId)) {
       return res.status(400).json({ success: false, error: 'Invalid event ID' });
     }
@@ -73,10 +80,10 @@ const getAttendanceForm = async (req, res) => {
 
     // Combine student data with attendance status
     const studentsWithAttendance = registrations.map(reg => ({
-      studentId: reg.studentId._id,
+      _id: reg.studentId._id,
       fullName: reg.studentId.profile.fullName,
       email: reg.studentId.profile.email,
-      studentId: reg.studentId.profile.studentId,
+      studentCode: reg.studentId.profile.studentId,
       status: attendanceMap[reg.studentId._id.toString()]?.status || 'absent',
       notes: attendanceMap[reg.studentId._id.toString()]?.notes || ''
     }));
