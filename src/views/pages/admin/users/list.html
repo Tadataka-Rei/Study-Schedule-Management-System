@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management - SSMS</title>
     <link rel="stylesheet" href="/css/dashboard.css">
 </head>
+
 <body>
     <div class="dashboard-container">
         <header class="dashboard-header">
@@ -15,17 +17,17 @@
                 <button onclick="logout()" class="logout-btn">Logout</button>
             </div>
         </header>
-        
+
         <nav class="dashboard-nav">
             <ul>
                 <li><a href="/admin/dashboard" class="nav-link">Dashboard</a></li>
                 <li><a href="/admin/users" class="nav-link active">User Management</a></li>
                 <li><a href="/admin/courses" class="nav-link">Course Management</a></li>
                 <li><a href="/admin/semesters" class="nav-link">Semester Management</a></li>
-                <li><a href="/admin/reports" class="nav-link">Reports</a></li>
+                <li><a href="/admin/rooms" class="nav-link">Room Management</a></li>
             </ul>
         </nav>
-        
+
         <main class="dashboard-content">
             <section class="content-header">
                 <div class="header-actions">
@@ -34,7 +36,7 @@
                         Add New User
                     </button>
                 </div>
-                
+
                 <div class="filters">
                     <select id="roleFilter" onchange="filterUsers()">
                         <option value="">All Roles</option>
@@ -45,7 +47,7 @@
                     <input type="text" id="searchInput" placeholder="Search users..." onkeyup="searchUsers()">
                 </div>
             </section>
-            
+
             <section class="users-table">
                 <div id="loadingMessage" class="loading">Loading users...</div>
                 <table id="usersTable" class="data-table" style="display: none;">
@@ -66,21 +68,21 @@
             </section>
         </main>
     </div>
-    
+
     <script src="/js/dashboard.js"></script>
     <script>
         let allUsers = [];
-        
-        document.addEventListener('DOMContentLoaded', function() {
+
+        document.addEventListener('DOMContentLoaded', function () {
             loadUserInfo();
             loadUsers();
         });
-        
+
         async function loadUsers() {
             try {
                 const response = await fetch('/admin/users/list');
                 const data = await response.json();
-                
+
                 if (data.success) {
                     allUsers = data.users;
                     displayUsers(allUsers);
@@ -94,11 +96,11 @@
                 showError('Error loading users');
             }
         }
-        
+
         function displayUsers(users) {
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
-            
+
             users.forEach(user => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -115,38 +117,38 @@
                 tbody.appendChild(row);
             });
         }
-        
+
         function filterUsers() {
             const role = document.getElementById('roleFilter').value;
             const filtered = role ? allUsers.filter(user => user.role === role) : allUsers;
             displayUsers(filtered);
         }
-        
+
         function searchUsers() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = allUsers.filter(user => 
+            const filtered = allUsers.filter(user =>
                 user.profile.fullName.toLowerCase().includes(searchTerm) ||
                 user.profile.email.toLowerCase().includes(searchTerm)
             );
             displayUsers(filtered);
         }
-        
+
         function editUser(userId) {
             window.location.href = `/admin/users/${userId}/edit`;
         }
-        
+
         async function deleteUser(userId) {
             if (!confirm('Are you sure you want to delete this user?')) {
                 return;
             }
-            
+
             try {
                 const response = await fetch(`/admin/users/${userId}`, {
                     method: 'DELETE'
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     showSuccess('User deleted successfully');
                     loadUsers(); // Reload the list
@@ -158,16 +160,16 @@
                 showError('Error deleting user');
             }
         }
-        
+
         function showSuccess(message) {
             alert(message); // You can replace with a better notification system
         }
-        
+
         function showError(message) {
             alert(message); // You can replace with a better notification system
         }
     </script>
-    
+
     <style>
         .role-badge {
             padding: 4px 8px;
@@ -176,64 +178,95 @@
             font-weight: bold;
             text-transform: uppercase;
         }
-        .role-badge.admin { background: #dc3545; color: white; }
-        .role-badge.lecturer { background: #28a745; color: white; }
-        .role-badge.student { background: #007bff; color: white; }
-        
+
+        .role-badge.admin {
+            background: #dc3545;
+            color: white;
+        }
+
+        .role-badge.lecturer {
+            background: #28a745;
+            color: white;
+        }
+
+        .role-badge.student {
+            background: #007bff;
+            color: white;
+        }
+
         .data-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
-        .data-table th, .data-table td {
+
+        .data-table th,
+        .data-table td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
+
         .data-table th {
             background: #f8f9fa;
             font-weight: bold;
         }
+
         .data-table tr:hover {
             background: #f5f5f5;
         }
-        
+
         .actions {
             display: flex;
             gap: 8px;
         }
-        .btn-edit, .btn-delete {
+
+        .btn-edit,
+        .btn-delete {
             padding: 4px 8px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
         }
-        .btn-edit { background: #ffc107; color: #212529; }
-        .btn-delete { background: #dc3545; color: white; }
-        
+
+        .btn-edit {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
         .content-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
+
         .header-actions {
             display: flex;
             justify-content: space-between;
             align-items: center;
             width: 100%;
         }
+
         .filters {
             display: flex;
             gap: 10px;
             margin-top: 10px;
         }
-        .filters select, .filters input {
+
+        .filters select,
+        .filters input {
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
         }
+
         .loading {
             text-align: center;
             padding: 40px;
@@ -241,4 +274,5 @@
         }
     </style>
 </body>
+
 </html>
