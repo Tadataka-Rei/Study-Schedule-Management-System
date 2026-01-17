@@ -193,6 +193,8 @@ const getTimetable = async (req, res) => {
     const studentId = req.session.user.id;
     const { semesterId, startDate, endDate } = req.query;
 
+    console.log('getTimetable hit. Student:', studentId, 'Query:', req.query);
+
     // Check if request is for JSON (API call) or HTML (page load)
     const isJsonRequest = req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'));
 
@@ -211,10 +213,14 @@ const getTimetable = async (req, res) => {
     }
 
     // Build query to match specific course AND section pairs
-    const sectionMatches = registrations.map(reg => ({
-      courseId: reg.courseId,
-      sectionId: reg.sectionId
-    }));
+    const sectionMatches = registrations.map(reg => {
+      const match = { courseId: reg.courseId };
+      // Only filter by sectionId if the student is registered for a specific section
+      if (reg.sectionId) {
+        match.sectionId = reg.sectionId;
+      }
+      return match;
+    });
 
     let matchStage = {
       type: 'class',
@@ -228,6 +234,8 @@ const getTimetable = async (req, res) => {
         $lte: new Date(endDate)
       };
     }
+
+    console.log('Fetching timetable with query:', JSON.stringify(matchStage));
 
     const events = await TimetableEvent.find(matchStage)
       .populate('courseId', 'code name')
@@ -307,10 +315,13 @@ const getStudentDashboardData = async (req, res) => {
         // Filter by specific sections
         let todayClasses = [];
         if (registrations.length > 0) {
-            const sectionMatches = registrations.map(r => ({
-                courseId: r.courseId._id,
-                sectionId: r.sectionId
-            }));
+            const sectionMatches = registrations.map(r => {
+                const match = { courseId: r.courseId._id };
+                if (r.sectionId) {
+                    match.sectionId = r.sectionId;
+                }
+                return match;
+            });
 
             todayClasses = await TimetableEvent.find({
                 $or: sectionMatches,
@@ -400,10 +411,13 @@ const getTodayEvents = async (req, res) => {
 
         if (registrations.length === 0) return res.json({ success: true, events: [] });
 
-        const sectionMatches = registrations.map(reg => ({
-            courseId: reg.courseId,
-            sectionId: reg.sectionId
-        }));
+        const sectionMatches = registrations.map(reg => {
+            const match = { courseId: reg.courseId };
+            if (reg.sectionId) {
+                match.sectionId = reg.sectionId;
+            }
+            return match;
+        });
 
         // 2. Set time range for "Today" (00:00 to 23:59)
         const start = new Date(); start.setHours(0,0,0,0);

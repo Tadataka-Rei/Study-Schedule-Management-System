@@ -24,7 +24,7 @@ const router = express.Router();
 // Page Routes (HTML)
 router.get('/dashboard', showStudentDashboard);
 router.get('/courses', showStudentCourses);
-router.get('/schedule', showStudentSchedule);
+router.get('/schedule', getTimetable);
 router.get('/grades', showStudentGrades);
 router.get('/attendance', showStudentAttendance);
 router.get('/enroll', showStudentEnroll);
