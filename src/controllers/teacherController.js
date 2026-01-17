@@ -496,6 +496,89 @@ const getTeacherTodayEvents = async (req, res) => {
   }
 };
 
+// Get pending enrollment requests for courses owned by the lecturer
+const getPendingEnrollments = async (req, res) => {
+  try {
+    const lecturerId = req.session.user.id;
+
+    // Check if request is for JSON (API call) or HTML (page load)
+    const isJsonRequest = req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'));
+
+    if (isJsonRequest) {
+      // Find courses owned by this lecturer
+      const lecturerCourses = await Course.find({ ownerLecturerId: lecturerId }).select('_id code name');
+
+      // Get pending registrations for these courses
+      const pendingRegistrations = await Registration.find({
+        courseId: { $in: lecturerCourses.map(c => c._id) },
+        status: 'pending'
+      })
+      .populate('studentId', 'profile.fullName profile.email profile.studentId')
+      .populate('courseId', 'code name')
+      .populate('semesterId', 'name')
+      .sort({ requestedAt: 1 });
+
+      res.json({ success: true, registrations: pendingRegistrations });
+    } else {
+      // Serve the HTML page
+      res.sendFile(path.join(__dirname, '../views/pages/teacher/courses/manage.html'));
+    }
+  } catch (error) {
+    console.error('Error fetching pending enrollments:', error);
+    if (req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'))) {
+      res.status(500).json({ success: false, error: 'Failed to fetch pending enrollments' });
+    } else {
+      res.status(500).send('Error loading enrollment management page');
+    }
+  }
+};
+
+// Manage enrollment request (approve or reject)
+const manageEnrollmentRequest = async (req, res) => {
+  try {
+    const { registrationId } = req.params;
+    const { action } = req.body; // 'approve' or 'reject'
+    const lecturerId = req.session.user.id;
+
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({ success: false, error: 'Invalid action' });
+    }
+
+    // Find the registration and verify access
+    const registration = await Registration.findById(registrationId)
+      .populate('courseId', 'ownerLecturerId sections');
+
+    if (!registration) {
+      return res.status(404).json({ success: false, error: 'Registration not found' });
+    }
+
+    // Verify the lecturer owns this course
+    if (registration.courseId.ownerLecturerId.toString() !== lecturerId) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    // Update registration status
+    registration.status = action === 'approve' ? 'approved' : 'rejected';
+    registration.decidedAt = new Date();
+    await registration.save();
+
+    // If approving, increment enrolledCount for the section
+    if (action === 'approve') {
+      const course = await Course.findById(registration.courseId._id);
+      const section = course.sections.find(s => s.sectionId === registration.sectionId);
+      if (section) {
+        section.enrolledCount += 1;
+        await course.save();
+      }
+    }
+
+    res.json({ success: true, message: `Enrollment ${action}d successfully` });
+  } catch (error) {
+    console.error('Error managing enrollment request:', error);
+    res.status(500).json({ success: false, error: 'Failed to manage enrollment request' });
+  }
+};
+
 module.exports = {
   getMyCourses,
   getCourseStudents,
@@ -511,5 +594,7 @@ module.exports = {
   submitAttendance,
   getTakeAttendancePage,
   getTeacherDashboardStats,
-  getTeacherTodayEvents
+  getTeacherTodayEvents,
+  getPendingEnrollments,
+  manageEnrollmentRequest
 };

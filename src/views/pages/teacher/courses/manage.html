@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Enrollments - SSMS</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <style>
+        .enrollment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .enrollment-table th,
+        .enrollment-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .enrollment-table th {
+            background-color: #f2f2f2;
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            margin: 2px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .approve-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .reject-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .no-enrollments {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>Manage Enrollments</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="userName"></span></span>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <nav class="dashboard-nav">
+            <ul>
+                <li><a href="/teacher/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/teacher/courses" class="nav-link">My Courses</a></li>
+                <li><a href="/teacher/courses/manage" class="nav-link active">Manage Enrollments</a></li>
+                <li><a href="/teacher/schedule" class="nav-link">My Schedule</a></li>
+                <li><a href="/teacher/assessments" class="nav-link">Assessments</a></li>
+                <li><a href="/teacher/grades" class="nav-link">Grades</a></li>
+                <li><a href="/teacher/attendance" class="nav-link">Attendance</a></li>
+            </ul>
+        </nav>
+
+        <main class="dashboard-content">
+            <section class="enrollments-section">
+                <h2>Pending Enrollment Requests</h2>
+                <div id="enrollmentsContainer">
+                    <p>Loading pending enrollments...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            loadUserInfo();
+            loadPendingEnrollments();
+        });
+
+        async function loadPendingEnrollments() {
+            try {
+                const response = await fetch('/teacher/courses/manage', {
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await response.json();
+
+                const container = document.getElementById('enrollmentsContainer');
+                if (data.success && data.registrations.length > 0) {
+                    container.innerHTML = `
+                        <table class="enrollment-table">
+                            <thead>
+                                <tr>
+                                    <th>Student Name</th>
+                                    <th>Student ID</th>
+                                    <th>Email</th>
+                                    <th>Course</th>
+                                    <th>Semester</th>
+                                    <th>Requested At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.registrations.map(reg => `
+                                    <tr data-registration-id="${reg._id}">
+                                        <td>${reg.studentId.profile.fullName}</td>
+                                        <td>${reg.studentId.profile.studentId}</td>
+                                        <td>${reg.studentId.profile.email}</td>
+                                        <td>${reg.courseId.code} - ${reg.courseId.name}</td>
+                                        <td>${reg.semesterId.name}</td>
+                                        <td>${new Date(reg.requestedAt).toLocaleDateString()}</td>
+                                        <td>
+                                            <button class="action-btn approve-btn" onclick="manageEnrollment('${reg._id}', 'approve')">Approve</button>
+                                            <button class="action-btn reject-btn" onclick="manageEnrollment('${reg._id}', 'reject')">Reject</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    container.innerHTML = '<div class="no-enrollments"><p>No pending enrollment requests.</p></div>';
+                }
+            } catch (error) {
+                console.error('Error loading pending enrollments:', error);
+                document.getElementById('enrollmentsContainer').innerHTML = '<p>Unable to load pending enrollments.</p>';
+            }
+        }
+
+        async function manageEnrollment(registrationId, action) {
+            try {
+                const response = await fetch(`/teacher/courses/manage/${registrationId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ action })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    // Remove the row from the table
+                    const row = document.querySelector(`tr[data-registration-id="${registrationId}"]`);
+                    if (row) {
+                        row.remove();
+                    }
+
+                    // Check if table is empty
+                    const tbody = document.querySelector('.enrollment-table tbody');
+                    if (tbody && tbody.children.length === 0) {
+                        document.getElementById('enrollmentsContainer').innerHTML = '<div class="no-enrollments"><p>No pending enrollment requests.</p></div>';
+                    }
+
+                    alert(`Enrollment ${action}d successfully`);
+                } else {
+                    alert(`Failed to ${action} enrollment: ${data.error}`);
+                }
+            } catch (error) {
+                console.error(`Error ${action}ing enrollment:`, error);
+                alert(`Failed to ${action} enrollment`);
+            }
+        }
+    </script>
+</body>
+
+</html>
