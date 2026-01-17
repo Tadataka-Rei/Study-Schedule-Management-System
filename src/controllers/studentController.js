@@ -105,18 +105,42 @@ const getMyEnrollments = async (req, res) => {
   try {
     const studentId = req.session.user.id;
 
+    console.log('Fetching enrollments for student:', studentId);
+    console.log('Session user:', req.session.user);
+
+    // Check if student exists
+    const student = await User.findById(studentId);
+    if (!student) {
+      console.log('Student not found');
+      return res.status(404).json({ success: false, error: 'Student not found' });
+    }
+
+    console.log('Student found:', student._id, student.role);
+
     const enrollments = await Registration.find({
       studentId,
-      // Change this to include pending
-      status: { $in: ['approved', 'pending'] } 
+      status: { $in: ['approved', 'pending'] }
     })
     .populate('courseId', 'code name credits')
     .populate('semesterId', 'name')
-    .sort({ 'courseId.code': 1 });
+    .sort({ requestedAt: -1 });
 
-    res.json({ success: true, enrollments });
+    // Filter out enrollments where the course has been deleted (courseId is null)
+    const validEnrollments = enrollments.filter(e => e.courseId);
+
+    console.log('Found enrollments:', enrollments.length);
+    console.log('Enrollments data:', enrollments.map(e => ({
+      id: e._id,
+      courseId: e.courseId,
+      semesterId: e.semesterId,
+      status: e.status
+    })));
+
+    res.json({ success: true, enrollments: validEnrollments });
   } catch (error) {
     console.error('Error fetching enrollments:', error);
+    console.error('Error details:', error.message);
+    console.error('Error stack:', error.stack);
     res.status(500).json({ success: false, error: 'Failed to fetch enrollments' });
   }
 };

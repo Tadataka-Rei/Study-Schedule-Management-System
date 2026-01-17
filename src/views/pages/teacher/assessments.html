@@ -316,6 +316,27 @@
                 }
             };
 
+            $.ajax({
+                url: '/teacher/assessments/create',
+                type: 'POST',
+                contentType: 'application/json', // Tells server we are sending JSON
+                data: JSON.stringify(formData),   // Serializes the nested object correctly
+                success: function (response) {
+                    if (response.success) {
+                        $('#createAssessmentModal').hide();
+                        $('#createAssessmentForm')[0].reset();
+                        loadAllAssessments();
+                    } else {
+                        alert('Error: ' + response.error);
+                    }
+                },
+                error: function (xhr) {
+                    // This will show you exactly what the server complained about
+                    const errorMsg = xhr.responseJSON ? xhr.responseJSON.error : 'Server Error';
+                    alert('Failed: ' + errorMsg);
+                }
+            });
+
             $.post('/teacher/assessments/create', formData)
                 .done(function (response) {
                     if (response.success) {
