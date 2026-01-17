@@ -1,10 +1,18 @@
 const { Course, User, Registration, Submission, Assessment, TimetableEvent, Room, Semester, Attendance } = require('../../models');
+const path = require('path');
 
 // Get lecturer's timetable
 const getTimetable = async (req, res) => {
   try {
     const lecturerId = req.session.user.id;
     const { semesterId, startDate, endDate } = req.query;
+
+    // Check if request is for JSON (API call) or HTML (page load)
+    const isJsonRequest = req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'));
+
+    if (!isJsonRequest) {
+      return res.sendFile(path.join(__dirname, '../../views/pages/teacher/schedule.html'));
+    }
 
     let matchStage = { type: 'class' };
     if (semesterId) matchStage.semesterId = semesterId;

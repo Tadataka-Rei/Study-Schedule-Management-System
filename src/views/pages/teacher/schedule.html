@@ -87,7 +87,7 @@
             margin-bottom: 8px;
             border-radius: 4px;
             font-size: 0.9em;
-            cursor: default;
+            cursor: pointer;
             transition: transform 0.1s;
         }
 
@@ -131,10 +131,11 @@
 
         <nav class="dashboard-nav">
             <ul>
-                <li><a href="/student/dashboard" class="nav-link">Dashboard</a></li>
-                <li><a href="/student/courses" class="nav-link">My Courses</a></li>
-                <li><a href="/student/schedule" class="nav-link active">My Schedule</a></li>
-                <li><a href="/student/grades" class="nav-link">Grades</a></li>
+                <li><a href="/teacher/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/teacher/courses" class="nav-link">My Courses</a></li>
+                <li><a href="/teacher/schedule" class="nav-link active">My Schedule</a></li>
+                <li><a href="/teacher/assessments" class="nav-link">Assessments</a></li>
+                <li><a href="/teacher/attendance/take" class="nav-link">Attendance</a></li>
             </ul>
         </nav>
 
@@ -217,6 +218,10 @@
             document.getElementById('dateRangeDisplay').textContent =
                 `${formatDate(currentWeekStart)} - ${formatDate(weekEnd)}, ${currentWeekStart.getFullYear()}`;
 
+            // Create columns for days (we'll just use a simple list layout inside columns for now)
+            // Note: A true time-grid requires more complex CSS/JS. 
+            // Here we create 1 row that spans all height, and we put events in the day columns.
+
             grid.innerHTML += '<div class="time-slot">All Day</div>';
             for (let i = 0; i < 7; i++) {
                 grid.innerHTML += `<div class="day-column" id="day-${i}"></div>`;
@@ -231,8 +236,7 @@
 
             try {
                 // Use the JSON endpoint
-                // Ensure your studentRoutes.js has router.get('/schedule', studentController.getTimetable)
-                const response = await fetch(`/student/schedule?startDate=${startDate}&endDate=${endDate}`, {
+                const response = await fetch(`/teacher/schedule?startDate=${startDate}&endDate=${endDate}`, {
                     headers: { 'Accept': 'application/json' }
                 });
                 const data = await response.json();
@@ -248,6 +252,7 @@
         function displayEvents(events) {
             events.forEach(event => {
                 const eventDate = new Date(event.startAt);
+                // Calculate day index (0 = Mon, 6 = Sun) based on our grid
                 let dayIndex = eventDate.getDay() - 1;
                 if (dayIndex === -1) dayIndex = 6; // Sunday
 
@@ -263,7 +268,7 @@
                         <div class="event-title">${event.courseId.code}</div>
                         <div class="event-room">Room: ${event.roomId ? event.roomId.code : 'TBA'}</div>
                     `;
-                    // No click action for students
+                    card.onclick = () => window.location.href = `/teacher/attendance/${event._id}`;
                     column.appendChild(card);
                 }
             });

@@ -1,4 +1,5 @@
 const { Course, User, Registration, Submission, Assessment, TimetableEvent } = require('../models');
+const path = require('path');
 
 // Get available courses for enrollment
 const getAvailableCourses = async (req, res) => {
@@ -167,6 +168,13 @@ const getTimetable = async (req, res) => {
   try {
     const studentId = req.session.user.id;
     const { semesterId, startDate, endDate } = req.query;
+
+    // Check if request is for JSON (API call) or HTML (page load)
+    const isJsonRequest = req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'));
+
+    if (!isJsonRequest) {
+      return res.sendFile(path.join(__dirname, '../views/pages/student/schedule.html'));
+    }
 
     // Get student's enrolled courses
     const enrolledCourseIds = await Registration.find({

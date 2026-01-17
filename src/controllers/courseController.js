@@ -1,4 +1,4 @@
-const { Course, User, Semester, Room } = require('../models');
+const { Course, User, Semester, Room, TimetableEvent } = require('../models');
 const path = require('path');
 
 // Show all courses
@@ -33,6 +33,60 @@ const showCreateCourseForm = async (req, res) => {
 // Show courses list page
 const showCoursesList = (req, res) => {
   res.sendFile(path.join(__dirname, '../views/pages/admin/courses/list.html'));
+};
+
+// Helper: Generate Timetable Events for a Course
+const generateTimetableEvents = async (course, semester) => {
+  const events = [];
+  const { startDate, endDate } = semester;
+
+  // Loop through each section in the course
+  for (const section of course.sections) {
+    if (!section.schedule || section.schedule.length === 0) continue;
+
+    // For each schedule slot (e.g., Monday 08:00-10:00)
+    for (const slot of section.schedule) {
+      let currentDate = new Date(startDate);
+      
+      // 1. Advance currentDate to the first occurrence of the specific dayOfWeek
+      // slot.dayOfWeek: 0 (Sun) - 6 (Sat)
+      while (currentDate.getDay() !== slot.dayOfWeek) {
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+
+      // 2. Generate events for every week until endDate
+      while (currentDate <= endDate) {
+        // Parse time strings (e.g., "08:00")
+        const [startHour, startMinute] = slot.startTime.split(':').map(Number);
+        const [endHour, endMinute] = slot.endTime.split(':').map(Number);
+
+        const startAt = new Date(currentDate);
+        startAt.setHours(startHour, startMinute, 0, 0);
+
+        const endAt = new Date(currentDate);
+        endAt.setHours(endHour, endMinute, 0, 0);
+
+        events.push({
+          type: 'class',
+          courseId: course._id,
+          sectionId: section.sectionId,
+          semesterId: semester._id,
+          startAt,
+          endAt,
+          roomId: slot.roomId,
+          status: 'scheduled'
+        });
+
+        // Move to next week
+        currentDate.setDate(currentDate.getDate() + 7);
+      }
+    }
+  }
+
+  if (events.length > 0) {
+    await TimetableEvent.insertMany(events);
+    console.log(`Generated ${events.length} timetable events for course ${course.code}`);
+  }
 };
 
 // Create new course
@@ -80,6 +134,12 @@ const createCourse = async (req, res) => {
     }
 
     const course = await Course.create(courseData);
+
+    // Generate actual calendar events for the semester
+    const semester = await Semester.findById(semesterId);
+    if (semester) {
+      await generateTimetableEvents(course, semester);
+    }
     
     res.json({ 
       success: true, 

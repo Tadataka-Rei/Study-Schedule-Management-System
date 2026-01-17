@@ -61,6 +61,7 @@ router.get('/semesters', getSemesters);
 
 // Timetable
 router.get('/timetable', getTimetable);
+router.get('/schedule', getTimetable);
 
 // Attendance Management
 router.get('/attendance/take', getTakeAttendancePage);
