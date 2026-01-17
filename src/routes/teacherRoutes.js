@@ -3,22 +3,32 @@ const { showTeacherDashboard } = require('../controllers/pageController');
 const {
   getMyCourses,
   getCourseStudents,
-  getCourseAssessments,
-  gradeSubmission,
   updateMyCourse,
-  getRooms,
-  getSemesters,
-  getTimetable,
   getCourseEditPage,
+  getPendingEnrollments,
+  manageEnrollmentRequest
+} = require('../controllers/teacher/teacherCourseController');
+const {
+  getCourseAssessments,
+  createAssessment,
+  gradeSubmission,
+  getAllAssessments,
+  updateAssessment,
+  deleteAssessment,
+  getAssessmentSubmissions,
+} = require('../controllers/teacher/teacherAssessmentController');
+const {
   getTodaysCourses,
   getAttendanceForm,
   submitAttendance,
-  getTakeAttendancePage,
+  getTakeAttendancePage
+} = require('../controllers/teacher/teacherAttendanceController');
+const { getTimetable } = require('../controllers/teacher/teacherTimetableController');
+const { getRooms, getSemesters } = require('../controllers/teacher/teacherResourceController');
+const {
   getTeacherDashboardStats,
-  getTeacherTodayEvents,
-  getPendingEnrollments,
-  manageEnrollmentRequest
-} = require('../controllers/teacherController');
+  getTeacherTodayEvents
+} = require('../controllers/teacher/teacherDashboardController');
 
 const router = express.Router();
 
@@ -35,8 +45,14 @@ router.get('/courses/manage', getPendingEnrollments);
 router.post('/courses/manage/:registrationId', manageEnrollmentRequest);
 
 // Student Management & Grading
+// 1. Route to show the page (The one your browser is looking for)
+router.post('/assessments/create', createAssessment);
 router.get('/courses/:courseId/:sectionId/students', getCourseStudents);
 router.get('/courses/:courseId/assessments', getCourseAssessments);
+router.get('/assessments', getAllAssessments);
+router.put('/assessments/:id', updateAssessment);
+router.delete('/assessments/:id', deleteAssessment);
+router.get('/assessments/:assessmentId/submissions', getAssessmentSubmissions);
 router.post('/submissions/:submissionId/grade', gradeSubmission);
 
 // Resources

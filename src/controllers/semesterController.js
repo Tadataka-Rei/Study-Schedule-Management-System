@@ -22,6 +22,14 @@ const showSemestersList = (req, res) => {
   res.sendFile(path.join(__dirname, '../views/pages/admin/semesters/list.html'));
 };
 
+const getCreateAssessmentPage = async (req, res) => {
+  try {
+        res.sendFile(path.join(__dirname, '../../views/pages/teacher/create-assessment.html'));
+    } catch (error) {
+        res.status(500).send('Error loading the creation page');
+    }
+  };
+
 // Create new semester
 const createSemester = async (req, res) => {
   try {
@@ -204,5 +212,5 @@ module.exports = {
   showEditSemesterForm,
   getSemester,
   updateSemester,
-  deleteSemester
+  deleteSemester,
 };

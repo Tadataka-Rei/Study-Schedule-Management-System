@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Students - Teacher Dashboard</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/auth.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>Teacher Portal</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="/teacher/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/teacher/courses" class="nav-link active">My Courses</a></li>
+                <li><a href="/teacher/assessments" class="nav-link">Assessments</a></li>
+                <li><a href="/teacher/grades" class="nav-link">Grades</a></li>
+                <li><a href="/teacher/schedule" class="nav-link">My Schedule</a></li>
+                <li><a href="/teacher/attendance/take" class="nav-link">Take Attendance</a></li>
+                <li><a href="/logout" class="nav-link logout">Logout</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Course Students</h1>
+                <div id="courseInfo">
+                    <p><strong>Course:</strong> <span id="courseName"></span></p>
+                    <p><strong>Section:</strong> <span id="sectionId"></span></p>
+                </div>
+            </header>
+
+            <div class="content-body">
+                <!-- Students List -->
+                <div id="studentsContainer" class="data-container">
+                    <div class="loading">Loading students...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const courseId = urlParams.get('courseId');
+            const sectionId = urlParams.get('sectionId');
+
+            if (!courseId || !sectionId) {
+                $('#studentsContainer').html('<div class="error">Invalid course or section ID</div>');
+                return;
+            }
+
+            loadCourseInfo(courseId, sectionId);
+            loadStudents(courseId, sectionId);
+        });
+
+        function loadCourseInfo(courseId, sectionId) {
+            // Load course info from local storage or API if needed
+            $('#courseName').text('Loading...');
+            $('#sectionId').text(sectionId);
+
+            // For now, just set section ID
+            // In a real app, you might want to load course details
+        }
+
+        function loadStudents(courseId, sectionId) {
+            $('#studentsContainer').html('<div class="loading">Loading students...</div>');
+
+            $.get(`/teacher/courses/${courseId}/${sectionId}/students`)
+                .done(function (response) {
+                    if (response.success) {
+                        displayStudents(response.students);
+                    } else {
+                        $('#studentsContainer').html('<div class="error">Failed to load students</div>');
+                    }
+                })
+                .fail(function () {
+                    $('#studentsContainer').html('<div class="error">Failed to load students</div>');
+                });
+        }
+
+        function displayStudents(students) {
+            if (students.length === 0) {
+                $('#studentsContainer').html('<div class="no-data">No students enrolled in this section</div>');
+                return;
+            }
+
+            let html = '<div class="students-table">';
+            html += `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            students.forEach(student => {
+                const studentData = student.studentId;
+                html += `
+                    <tr>
+                        <td>${studentData.profile.studentId}</td>
+                        <td>${studentData.profile.fullName}</td>
+                        <td>${studentData.profile.email}</td>
+                        <td>
+                            <button class="btn-secondary" onclick="viewStudentGrades('${studentData._id}')">View Grades</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+            html += '</div>';
+
+            $('#studentsContainer').html(html);
+        }
+
+        function viewStudentGrades(studentId) {
+            // TODO: Implement view student grades
+            alert('View student grades functionality not implemented yet');
+        }
+    </script>
+</body>
+
+</html>
